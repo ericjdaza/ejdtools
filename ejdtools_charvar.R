@@ -1,115 +1,102 @@
-# ----- template.R.v160625s ----- #
-
-# ========================== #
-# ========================== #
-# ===== Documentation. ===== #
-# ========================== #
-# ========================== #
-#
-# Project:      ejdtools_charvar
-#
-# Description:  This program creates a basic codebook of variables in a dataset by describing basic characteristics for each variable.
-#
-# 160625s [Daza_EJ] --- Created program.
-#
-
-
-
-
-
-
-
-# ============================ #
-# ============================ #
-# ===== Data Management. ===== #
-# ============================ #
-# ============================ #
-
-
-
-### Characterize all variables.
-ejdtools_charvar <- function(dataset.datain) {
+ejdtools_charvar <- function(
+  datain,
+  datain_name = NA,
+  varname,
+  vardomaingroup = NA,
+  vardomain = NA
+) {
   
-  # Index variable names for use below.
-  for (j in 1:dim(dataset.datain)[2]) {
-    
-    dataset.codebook.temp1 <- as.data.frame(table(dataset.datain[,j]))
-    dataset.codebook.temp1$nameindex <- j
-    if ( j == 1 ) dataset.codebook.temp2 <- dataset.codebook.temp1
-    if ( j > 1 ) dataset.codebook.temp2 <- rbind(dataset.codebook.temp2, dataset.codebook.temp1)
-    
-  }
-  names(dataset.codebook.temp2) <- c("value", "valuecount", "nameindex")
+  # # Debugging code only.
+  # rm(
+  #   datain,
+  #   varname
+  # )
+  # datain <- tbl_touse_to_na_neg1
+  # varname <- names(tbl_touse_to_na_neg1)[6]
   
-  # Construct variable characteristics.
-  dataset.codebook.temp2$value <- as.character(dataset.codebook.temp2$value)
-  dataset.codebook.temp2$min <- NA
-  dataset.codebook.temp2$max <- NA
-  for ( j in 1:length(names(dataset.datain)) ) {
+  names(datain)[which(names(datain)==varname)] <- "sumVarChars_varname"
+  if (class(datain$sumVarChars_varname) == "factor") datain$sumVarChars_varname <- as.character(datain$sumVarChars_varname)
+  
+  Class <- class(datain$sumVarChars_varname)
+  n_obs <- sum(!is.na(datain$sumVarChars_varname))
+  p_obs <- sum(!is.na(datain$sumVarChars_varname)) / length(datain$sumVarChars_varname) * 100
+  n_miss <- sum(is.na(datain$sumVarChars_varname))
+  p_miss <- sum(is.na(datain$sumVarChars_varname)) / length(datain$sumVarChars_varname) * 100
+  n_obs_unique <- NA
+  n5_obs <- NA
+  p5_obs <- NA
+  Minimum <- NA
+  Maximum <- NA
+  Median <- NA
+  Mean <- NA
+  `Interquartile Range` <- NA
+  `Standard Deviation` <- NA
+  if (Class == "character") {
     
-    dataset.codebook.temp3 <- dataset.codebook.temp2[which(dataset.codebook.temp2$nameindex == j),]
-    dataset.codebook.temp3$value <- as.character(dataset.codebook.temp3$value)
-    dataset.codebook.temp3$freq <- dataset.codebook.temp3$valuecount / sum(dataset.codebook.temp3$valuecount)
-    dataset.codebook.temp3$freqnoNA <- dataset.codebook.temp3$valuecount / sum(dataset.codebook.temp3$valuecount[dataset.codebook.temp3$value != ""])
-    for ( i in 1:length(dataset.codebook.temp3$value) ) {
-      if ( dataset.codebook.temp3$value[i] == "" ) dataset.codebook.temp3$freqnoNA[i] <- NA 
-    }
-    dataset.codebook.temp3$name <- names(dataset.datain)[j]
-    dataset.codebook.temp3$type <- class(dataset.datain[,j])
-    dataset.codebook.temp3$mean <- NA
-    dataset.codebook.temp3$median <- NA
-    dataset.codebook.temp3$min <- NA
-    dataset.codebook.temp3$max <- NA
-    dataset.codebook.temp3$sd <- NA
-    if ( class(dataset.datain[,j]) != "character" & class(dataset.datain[,j]) != "factor" ) {
-      
-      dataset.codebook.temp3$mean <- mean(as.numeric(dataset.datain[,j]), na.rm=TRUE)
-      dataset.codebook.temp3$median <- median(as.numeric(dataset.datain[,j]), na.rm=TRUE)
-      dataset.codebook.temp3$min <- min(as.numeric(dataset.codebook.temp3$value), na.rm=TRUE)
-      dataset.codebook.temp3$max <- max(as.numeric(dataset.codebook.temp3$value), na.rm=TRUE)
-      dataset.codebook.temp3$sd <- sd(as.numeric(dataset.datain[,j]), na.rm=TRUE)
-      
-    }
-    
-    if ( j == 1 ) dataset.codebook <- dataset.codebook.temp3
-    else dataset.codebook <- rbind(dataset.codebook, dataset.codebook.temp3)
-    
-  }
-  for ( i in 1:length(dataset.codebook$value) ) {
-    if ( dataset.codebook$value[i] == "" ) dataset.codebook$freqnoNA[i] <- NA
-  }
-  dataset.codebook <- dataset.codebook[
-    c(
-      "nameindex",
-      "name",
-      "type",
-      "mean",
-      "median",
-      "min",
-      "max",
-      "sd",
-      "value",
-      "valuecount",
-      "freq",
-      "freqnoNA"
+    table_sorted <- datain %>%
+      dplyr::filter(!is.na(sumVarChars_varname)) %>%
+      dplyr::count(sumVarChars_varname) %>%
+      dplyr::arrange(desc(n))
+    n_obs_unique <- length(unique(datain$sumVarChars_varname))
+    n5_obs <- paste(
+      head(table_sorted, 5)$sumVarChars_varname,
+      collapse = ", "
     )
-    ]
-  dataset.codebook$pct <- round(dataset.codebook$freq * 100, digits=2)
-  dataset.codebook$pctnoNA <- round(dataset.codebook$freqnoNA * 100, digits=2)
-  
-  # Return codebook.
-  return(dataset.codebook)
+    p5_obs <- paste(
+      round(
+        x = head(table_sorted, 5)$n / sum(!is.na(datain$sumVarChars_varname)) * 100,
+        digits = 2
+      ),
+      collapse = ", "
+    )
+    
+  }
+  if (!(Class %in% c("character", "factor"))) {
+    
+    sumVarChars_varname_touse <- as.numeric(datain$sumVarChars_varname)
+    if (sum(is.na(sumVarChars_varname_touse)) != length(datain$sumVarChars_varname)) {
+      
+      Minimum <- min(sumVarChars_varname_touse, na.rm = TRUE)
+      Maximum <- max(sumVarChars_varname_touse, na.rm = TRUE)
+      Median <- median(sumVarChars_varname_touse, na.rm = TRUE)
+      Mean <- mean(sumVarChars_varname_touse, na.rm = TRUE)
+      `Interquartile Range` <- IQR(sumVarChars_varname_touse, na.rm = TRUE)
+      `Standard Deviation` <- sd(sumVarChars_varname_touse, na.rm = TRUE)
+      
+    }
+    if (Class == "Date") {
+      
+      Minimum <- as.Date(x = Minimum, origin = as.Date("1970-01-01"))
+      Maximum <- as.Date(x = Maximum, origin = as.Date("1970-01-01"))
+      Median <- as.Date(x = Median, origin = as.Date("1970-01-01"))
+      Mean <- as.Date(x = Mean, origin = as.Date("1970-01-01"))
+      
+    }
+    
+  }
+  tbl_out <- dplyr::tibble(
+    Variable = varname,
+    Domain = vardomaingroup,
+    Subdomain = vardomain,
+    Class = Class,
+    `Number of Observed Values (not NA)` = n_obs,
+    `Percentage of Observed Values (not NA)` = p_obs,
+    `Number of Missing Values (NA)` = n_miss,
+    `Percentage of Missing Values (NA)` = p_miss,
+    `Number of Unique Observed Values` = n_obs_unique,
+    `Five Most Common Observed Values` = n5_obs,
+    `Frequencies (%) of Five Most Common Observed Values` = p5_obs,
+    Minimum = as.character(Minimum),
+    Maximum = as.character(Maximum),
+    Median = as.character(Median),
+    Mean = as.character(Mean),
+    `Interquartile Range` = `Interquartile Range`,
+    `Standard Deviation` = `Standard Deviation`
+  )
+  if (!is.na(datain_name)) tbl_out <- dplyr::bind_cols(
+    x = dplyr::tibble(Dataset = datain_name),
+    tbl_out
+  )
+  tbl_out
   
 }
-
-
-
-
-
-
-
-# ====================================================================== #
-# ====================================================================== #
-# ===== Miscellaneous (e.g., code, help files/websites, examples). ===== #
-# ====================================================================== #
-# ====================================================================== #

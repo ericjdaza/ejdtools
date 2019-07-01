@@ -1,4 +1,41 @@
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
+### Miscellaneous.
+
+*.DS_Store
+
+### R.
+
+*.Rproj.user
+*.Rhistory
+*.RData
+*.Ruserdata
+
+
+### Storage.
+
+*.RData
+*.xls
+*.xlsx
+*.csv
+*.txt
+*.tsv
+*.psv
+
+### R Markdown.
+
+*.toc
+*.nav
+*.out
+*.aux
+*.snm
+*.vrb
+
+### LaTeX.
+
+*.log
+*.synctex.gz
+*.out
+*.aux
+*.log
+*.bbl
+*.blg
+*.bib

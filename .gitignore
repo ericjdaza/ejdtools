@@ -39,3 +39,4 @@
 *.bbl
 *.blg
 *.bib
+.Rproj.user

@@ -11,16 +11,18 @@ fancyTable <- function(
     
     tbl_out <- dplyr::tibble(
       n,
-      pctcol = (n %>% prop.table * 100) %>% round(round_digits)
+      pct = (n %>% prop.table * 100) %>% round(round_digits)
     )
-    if (margin_value == 1) names(tbl_out)[names(tbl_out) == "pctcol"] <- "row %"
-    if (margin_value == 2) names(tbl_out)[names(tbl_out) == "pctcol"] <- "col %"
+    if (margin_value == 1) names(tbl_out)[names(tbl_out) == "pct"] <- "row %"
+    if (margin_value == 2) names(tbl_out)[names(tbl_out) == "pct"] <- "col %"
     
   }
   if (length(varnames) == 2) tbl_out <- dplyr::tibble(
     n,
-    pctcol = (n %>% prop.table(margin = margin_value) * 100) %>% round(round_digits)
+    pct = (n %>% prop.table(margin = margin_value) * 100) %>% round(round_digits)
   )
-  tbl_out %>% as.matrix %>% knitr::kable("simple")
+  mat_out <- tbl_out %>% as.matrix
+  rownames(mat_out) <- n %>% rownames
+  mat_out %>% knitr::kable("simple")
   
 }

@@ -7,17 +7,20 @@ fancyTable <- function(
 ) {
   
   n <- table(datain[varnames], useNA = "ifany")
-  if (length(varnames) == 1) return(
-    cbind(
+  if (length(varnames) == 1) {
+    
+    tbl_out <- dplyr::tibble(
       n,
-      (n %>% prop.table * 100) %>% round(round_digits) %>% paste0("%")
-    ) %>% knitr::kable("simple")
+      pctcol = (n %>% prop.table * 100) %>% round(round_digits)
+    )
+    if (margin_value == 1) names(tbl_out)[names(tbl_out) == "pctcol"] <- "row %"
+    if (margin_value == 2) names(tbl_out)[names(tbl_out) == "pctcol"] <- "col %"
+    
+  }
+  if (length(varnames) == 2) tbl_out <- dplyr::tibble(
+    n,
+    pctcol = (n %>% prop.table(margin = margin_value) * 100) %>% round(round_digits)
   )
-  if (length(varnames) == 2) return(
-    cbind(
-      n,
-      (n %>% prop.table(margin = margin_value) * 100) %>% round(round_digits) %>% paste0("%") %>% matrix(ncol=ncol(n))
-    ) %>% knitr::kable("simple")
-  )
+  tbl_out %>% as.matrix %>% knitr::kable("simple")
   
 }

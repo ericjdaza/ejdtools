@@ -1,9 +1,10 @@
-# fancyTable: Table with percentages
 fancyTable <- function(
   datain,
   varnames,
   round_digits = 2,
-  margin_value = 2 # 1 = row percentages, 2 = col percentages
+  margin_value = 2, # 1 = row percentages, 2 = col percentages
+  kable_print = TRUE,
+  kable_type = "simple"
 ) {
   
   n <- table(datain[varnames], useNA = "ifany")
@@ -23,6 +24,6 @@ fancyTable <- function(
   )
   mat_out <- tbl_out %>% as.matrix
   rownames(mat_out) <- n %>% rownames
-  mat_out %>% knitr::kable("simple")
+  if (kable_print == TRUE) mat_out %>% knitr::kable(kable_type)
   
 }

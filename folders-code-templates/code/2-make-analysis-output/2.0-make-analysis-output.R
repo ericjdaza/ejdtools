@@ -28,10 +28,12 @@ config <- jsonlite::fromJSON("/.../output/config.json")
 str(config)
 
 
-## Load custom tools.
-files_sources <- list.files(paste0(path_code, "ejdtools/"))
-sapply(paste0(path_code, "ejdtools/", files_sources), source)
-rm(files_sources)
+# ## Load custom tools.
+# path_ejdtools <- "/.../ejdtools/"
+# files_sources <- list.files(path_ejdtools)
+# files_sources <- files_sources[grepl(".R", files_sources)]
+# sapply(paste0(path_ejdtools, files_sources), source)
+# rm(files_sources)
 
 
 

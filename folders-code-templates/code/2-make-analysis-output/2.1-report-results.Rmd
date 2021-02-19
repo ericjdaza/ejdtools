@@ -1,0 +1,71 @@
+---
+title: "Project: "
+output: html_document
+---
+
+
+```{r include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r eval=FALSE}
+# Project: 
+#   Jira: 
+# 
+# Data flow
+#   See config.json for data folder (i.e., config['path_data']).
+#   Input: files in config['input*'], config['output'], config['output_pd'], and config['output_ad'] folders from config.json.
+#   Output: files in config['output'] and config['output_ao'] folders from config.json.
+
+
+
+# Preliminary processing
+
+
+## Clear environment and install/load packages.
+rm(list=ls())
+if (!require("pacman")) install.packages("pacman") # just to make sure "pacman" is installed
+pacman::p_load() # e.g., naniar, extrafont, tidyverse, reshape2, janitor, lubridate, jsonlite, arsenal, knitr, feather
+
+
+## Set global parameters.
+scalar_seed <- 
+  
+  
+## Read config file. The part of the path before "output/config.json"
+## should exactly match config$path_data.
+config <- jsonlite::fromJSON("/.../output/config.json")
+str(config)
+
+
+## Load custom tools.
+files_sources <- list.files(paste0(path_code, "ejdtools/"))
+sapply(paste0(path_code, "ejdtools/", files_sources), source)
+rm(files_sources)
+
+
+
+# Load datasets or data image.
+dataset_name1 <- feather::read_feather(paste0(config$output_ao, "/[dataset_name1].feather"))
+load.image(paste0(config$output_ao, "/[data_image_name].Rmd"))
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

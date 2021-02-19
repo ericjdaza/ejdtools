@@ -50,7 +50,7 @@ str(config)
 [final_name1] <- [temp_name1]_[m]
 
 [final_name1] %>% str
-feather::write_feather([final_name1], paste0(config$output_pd, "/[final_name1].feather"))
+feather::write_feather([final_name1], paste0(config$output_pd, "[final_name1].feather"))
 
 
 ## Dataset n

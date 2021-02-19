@@ -50,7 +50,7 @@ str(config)
 [final_name1] <- [temp_name1]_[m]
 
 [final_name1] %>% str
-feather::write_feather([final_name1], paste0(config$output_ao, "/[final_name1].feather"))
+feather::write_feather([final_name1], paste0(config$output_ao, "[final_name1].feather"))
 
 
 ## Dataset n
@@ -72,4 +72,4 @@ feather::write_feather([final_name1], paste0(config$output_ao, "/[final_name1].f
 
 
 # Save data image for loading in report .Rmd.
-save.image(paste0(config$output_ao, "/[data_image_name].Rmd"))
+save.image(paste0(config$output_ao, "[data_image_name].Rmd"))

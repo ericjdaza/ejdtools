@@ -49,8 +49,8 @@ str(config)
 
 
 # Load datasets or data image.
-dataset_name1 <- feather::read_feather(paste0(config$output_ao, "/[dataset_name1].feather"))
-load.image(paste0(config$output_ao, "/[data_image_name].Rmd"))
+dataset_name1 <- feather::read_feather(paste0(config$output_ao, "[dataset_name1].feather"))
+load.image(paste0(config$output_ao, "[data_image_name].Rmd"))
 ```
 
 ## R Markdown

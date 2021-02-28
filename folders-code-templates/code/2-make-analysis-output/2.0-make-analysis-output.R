@@ -72,4 +72,4 @@ feather::write_feather([final_name1], paste0(config$output_ao, "[final_name1].fe
 
 
 # Save data image for loading in report .Rmd.
-save.image(paste0(config$output_ao, "[data_image_name].Rmd"))
+save.image(paste0(config$output_ao, "[data_image_name].RData"))

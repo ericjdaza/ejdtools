@@ -4,7 +4,7 @@ fancyTable <- function(
   round_digits = 2,
   margin_value = 2, # 1 = row percentages, 2 = col percentages
   kable_print = TRUE,
-  kable_type = "simple"
+  kable_type = NA
 ) {
   
   n <- table(datain[varnames], useNA = "ifany")
@@ -24,6 +24,15 @@ fancyTable <- function(
   )
   mat_out <- tbl_out %>% as.matrix
   rownames(mat_out) <- n %>% rownames
-  if (kable_print == TRUE) mat_out %>% knitr::kable(kable_type)
+  if (kable_print == TRUE) {
+    
+    ifelse(
+      !is.na(kable_type),
+      print_out <- mat_out %>% knitr::kable(kable_type),
+      print_out <- mat_out %>% knitr::kable()
+    )
+    print_out
+    
+  }
   
 }

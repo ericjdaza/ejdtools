@@ -9,6 +9,8 @@
 
 
 # Preliminary processing
+# RUN THIS CODE IN TERMINAL BEFORE RUNNING THIS CELL TO PREVENT INSTALL.PACKAGES() ERRORS:
+# sudo chmod -R 777 /opt/domino/spark/R/
 
 
 ## Install/load packages.

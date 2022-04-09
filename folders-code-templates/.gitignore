@@ -43,5 +43,10 @@ vignettes/*.pdf
 /data/
 /data/*
 
+# Data files to exclude
+*.feather
+*.csv
+*.RData
+
 # Other files
 */*.DS_Store

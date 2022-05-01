@@ -1,3 +1,4 @@
+# Function to summarize any variable.
 ejdtools_charvar <- function(
   datain,
   datain_name = NA,
@@ -15,7 +16,10 @@ ejdtools_charvar <- function(
   # varname <- names(tbl_touse_to_na_neg1)[6]
   
   names(datain)[which(names(datain)==varname)] <- "sumVarChars_varname"
-  if (class(datain$sumVarChars_varname) == "factor") datain$sumVarChars_varname <- as.character(datain$sumVarChars_varname)
+  if (
+    class(datain$sumVarChars_varname) == "factor" |
+    length(table(datain$sumVarChars_varname)) <= 2
+  ) datain$sumVarChars_varname <- as.character(datain$sumVarChars_varname)
   
   Class <- class(datain$sumVarChars_varname)
   n_obs <- sum(!is.na(datain$sumVarChars_varname))

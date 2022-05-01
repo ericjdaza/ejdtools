@@ -2,10 +2,9 @@
 # a continuous outcome with every variable in a set of predictor
 # variables.
 gt_univariate_tests <- function(
-  datain,
-  listin,
-  outcome_var,
-  predictor_vars
+  datain, # input dataset
+  outcome_var, # continuous outcome variable
+  predictor_vars # set of predictor variables to marginally test
 ) {
   for (predictor_var in predictor_vars) {
     

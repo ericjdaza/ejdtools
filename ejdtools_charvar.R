@@ -27,6 +27,7 @@ ejdtools_charvar <- function(
   n_miss <- sum(is.na(datain$sumVarChars_varname))
   p_miss <- sum(is.na(datain$sumVarChars_varname)) / length(datain$sumVarChars_varname) * 100
   n_obs_unique <- NA
+  v5_obs <- NA
   n5_obs <- NA
   p5_obs <- NA
   Minimum <- NA
@@ -42,8 +43,12 @@ ejdtools_charvar <- function(
       dplyr::count(sumVarChars_varname) %>%
       dplyr::arrange(desc(n))
     n_obs_unique <- length(unique(datain$sumVarChars_varname))
-    n5_obs <- paste(
+    v5_obs <- paste(
       head(table_sorted, 5)$sumVarChars_varname,
+      collapse = ", "
+    )
+    n5_obs <- paste(
+      head(table_sorted, 5)$n,
       collapse = ", "
     )
     p5_obs <- paste(
@@ -88,7 +93,8 @@ ejdtools_charvar <- function(
     `Number of Missing Values (NA)` = n_miss,
     `Percentage of Missing Values (NA)` = p_miss,
     `Number of Unique Observed Values` = n_obs_unique,
-    `Five Most Common Observed Values` = n5_obs,
+    `Five Most Common Observed Values` = v5_obs,
+    `Counts of Five Most Common Observed Values` = n5_obs,
     `Frequencies (%) of Five Most Common Observed Values` = p5_obs,
     Minimum = as.character(Minimum),
     Maximum = as.character(Maximum),

@@ -3,7 +3,7 @@ fancyTable <- function(
   varnames,
   round_digits = 2,
   margin_value = 2, # 1 = row percentages, 2 = col percentages
-  print_output_type = "kable", # "kable" or "tbl"
+  print_output_type = "kable", # "kable" or "tblmat"
   kable_type = NA
 ) {
   
@@ -34,7 +34,7 @@ fancyTable <- function(
     return(print_out)
     
   }
-  if (print_output_type == "tbl") return(
+  if (print_output_type == "tblmat") return(
     list(
       tbl_out = tbl_out,
       mat_out = mat_out

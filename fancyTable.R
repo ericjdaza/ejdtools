@@ -31,7 +31,7 @@ fancyTable <- function(
       print_out <- mat_out %>% knitr::kable(kable_type),
       print_out <- mat_out %>% knitr::kable()
     )
-    print_out
+    return(print_out)
     
   }
   if (print_output_type == "tbl") return(

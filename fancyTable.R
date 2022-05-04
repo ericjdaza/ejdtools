@@ -34,5 +34,11 @@ fancyTable <- function(
     print_out
     
   }
+  if (kable_print == FALSE) return(
+    list(
+      tbl_out = tbl_out,
+      mat_out = mat_out
+    )
+  )
   
 }

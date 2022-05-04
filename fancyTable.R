@@ -3,7 +3,7 @@ fancyTable <- function(
   varnames,
   round_digits = 2,
   margin_value = 2, # 1 = row percentages, 2 = col percentages
-  kable_print = TRUE,
+  print_output_type = "kable", # "kable" or "tbl"
   kable_type = NA
 ) {
   
@@ -24,7 +24,7 @@ fancyTable <- function(
   )
   mat_out <- tbl_out %>% as.matrix
   rownames(mat_out) <- n %>% rownames
-  if (kable_print == TRUE) {
+  if (print_output_type == "kable") {
     
     ifelse(
       !is.na(kable_type),
@@ -34,7 +34,7 @@ fancyTable <- function(
     print_out
     
   }
-  if (kable_print == FALSE) return(
+  if (print_output_type == "tbl") return(
     list(
       tbl_out = tbl_out,
       mat_out = mat_out

@@ -30,8 +30,8 @@ gt_univariate_tests <- function(
           )
           
         ) %>%
-        add_n() %>% # add column with total number of non-missing observations
-        add_p() %>% # test for a difference between groups
+        gtsummary::add_n() %>% # add column with total number of non-missing observations
+        gtsummary::add_p() %>% # test for a difference between groups
         #     add_p(test = all_categorical() ~ "chisq.test") %>% # test for a difference between groups; default is fisher.test; see https://www.danieldsjoberg.com/gtsummary/reference/add_p.tbl_summary.html
         #     add_q() %>% # multiplicity-adjusted
         gtsummary::bold_labels() %>%

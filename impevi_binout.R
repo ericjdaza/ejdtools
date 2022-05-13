@@ -17,7 +17,8 @@ impevi_binout <- function(
     dplyr::distinct(variable, p.value) %>%
     dplyr::mutate(
       
-      statistical_evidence = 1 - p.value,
+      statistical_evidence_pvalue_flipped = 1 - p.value,
+      statistical_evidence_neglog_pvalue = -log(p.value, 10),
       
       plt05 = (p.value < 0.05),
       plt01 = (p.value < 0.01),
@@ -214,7 +215,7 @@ impevi_binout <- function(
         var_type == "categorical" ~ compprop_median
       )
     ) %>%
-    dplyr::arrange(dplyr::desc(statistical_evidence))
+    dplyr::arrange(dplyr::desc(statistical_evidence_pvalue_flipped))
   
   
   # Return stuff.

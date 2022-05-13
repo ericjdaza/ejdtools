@@ -7,7 +7,9 @@
 #   statistical evidence = 1 - p-value (i.e., statistical significance)
 
 impevi_binout <- function(
-  datain # the `_data` object output by gtsummary::tbl_summary() %>% gtsummary::as_gt()
+  datain, # the `_data` object output by gtsummary::tbl_summary() %>% gtsummary::as_gt()
+  cont_imp_var = "Ustandardized", #  "median_difference" or "Ustandardized"; importance metric to use for continuous variables
+  transform_cont_imp_var = FALSE # transform the importance values for continuous variables through log-base-10 transform of the absolute values
 ) {
   
   
@@ -112,6 +114,65 @@ impevi_binout <- function(
   rm(i)
   
   
+  # Get medians per group for importance calculations for continuous variables only.
+  tbl_medians_continuous <- datain %>%
+    dplyr::filter(
+      var_type == "continuous2",
+      label == "Median (IQR)",
+      !is.na(stat_1),
+      !is.na(stat_2)
+    ) %>%
+    dplyr::distinct(
+      variable,
+      stat_1,
+      stat_2
+    ) %>%
+    dplyr::mutate(
+      
+      median1 = NA,
+      median2 = NA
+      
+    )
+  
+  # gregexpr code source: https://stackoverflow.com/questions/14249562/find-the-location-of-a-character-in-string
+  for (i in 1:nrow(tbl_medians_continuous)) {
+    
+    tbl_medians_continuous$median1[i] <- tbl_medians_continuous$stat_1[i] %>%
+      trimws %>%
+      stringr::str_replace_all(",", "") %>%
+      substr(
+        1,
+        unlist(
+          gregexpr(
+            pattern = "\\(",
+            tbl_medians_continuous$stat_1[i] %>%
+              trimws %>%
+              stringr::str_replace_all(",", "")
+          )[1]
+        ) - 1
+      ) %>%
+      as.numeric
+    
+    tbl_medians_continuous$median2[i] <- tbl_medians_continuous$stat_2[i] %>%
+      trimws %>%
+      stringr::str_replace_all(",", "") %>%
+      substr(
+        1,
+        unlist(
+          gregexpr(
+            pattern = "\\(",
+            tbl_medians_continuous$stat_2[i] %>%
+              trimws %>%
+              stringr::str_replace_all(",", "")
+          )[1]
+        ) - 1
+      ) %>%
+      as.numeric
+    
+  }
+  rm(i)
+  
+  
   # Calculate importance per predictor variable type.
   
   ## Continuous predictor variables
@@ -146,7 +207,14 @@ impevi_binout <- function(
       
     ) %>%
     dplyr::mutate(Ustandardized = 1 - statistic / Umax) %>%
-    dplyr::rename(Ustatistic = statistic)
+    dplyr::rename(Ustatistic = statistic) %>%
+    dplyr::left_join(
+      
+      y = tbl_medians_continuous %>%
+        dplyr::mutate(median_difference = median2 - median1),
+      by = "variable"
+      
+    )
   
   ## Categorical predictor variables
   
@@ -203,19 +271,39 @@ impevi_binout <- function(
   
   # Combine all evidence and importance values.
   tbl_main <- tbl_importance_continuous %>%
-    dplyr::select(variable, var_type, Ustandardized) %>%
+    dplyr::select(
+      variable,
+      var_type,
+      Ustandardized,
+      median_difference
+    ) %>%
     dplyr::bind_rows(tbl_importance_categorical) %>%
     dplyr::full_join(
       y = tbl_evidence,
       by = "variable"
     ) %>%
+    dplyr::arrange(dplyr::desc(statistical_evidence_pvalue_flipped))
+  if (cont_imp_var == "Ustandardized") tbl_main <- tbl_main %>%
     dplyr::mutate(
       marginal_importance = case_when(
         var_type == "continuous2" ~ Ustandardized,
         var_type == "categorical" ~ compprop_median
       )
-    ) %>%
-    dplyr::arrange(dplyr::desc(statistical_evidence_pvalue_flipped))
+    )
+  if (cont_imp_var == "median_difference") tbl_main <- tbl_main %>%
+    dplyr::mutate(
+      marginal_importance = case_when(
+        var_type == "continuous2" ~ median_difference,
+        var_type == "categorical" ~ compprop_median
+      )
+    )
+  if (transform_cont_imp_var == TRUE) tbl_main <- tbl_main %>%
+    dplyr::mutate(
+      marginal_importance = case_when(
+        var_type == "continuous2" ~ log(abs(marginal_importance), 10),
+        var_type == "categorical" ~ marginal_importance
+      )
+    )
   
   
   # Return stuff.

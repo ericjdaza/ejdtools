@@ -113,7 +113,7 @@ impevi_binout <- function(
   
   
   # Get medians per group for importance calculations for continuous variables only.
-  tbl_medians_continuous <- datain %>%
+  tbl_means_medians_continuous <- datain %>%
     dplyr::filter(
       var_type == "continuous2",
       label == "Median (IQR)",
@@ -127,15 +127,17 @@ impevi_binout <- function(
     ) %>%
     dplyr::mutate(
       
+      mean1 = NA,
+      mean2 = NA,
       median1 = NA,
       median2 = NA
       
     )
   
   # gregexpr code source: https://stackoverflow.com/questions/14249562/find-the-location-of-a-character-in-string
-  for (i in 1:nrow(tbl_medians_continuous)) {
+  for (i in 1:nrow(tbl_means_medians_continuous)) {
     
-    tbl_medians_continuous$median1[i] <- tbl_medians_continuous$stat_1[i] %>%
+    tbl_means_continuous$mean1[i] <- tbl_means_continuous$stat_1[i] %>%
       trimws %>%
       stringr::str_replace_all(",", "") %>%
       substr(
@@ -143,7 +145,7 @@ impevi_binout <- function(
         unlist(
           gregexpr(
             pattern = "\\(",
-            tbl_medians_continuous$stat_1[i] %>%
+            tbl_means_continuous$stat_1[i] %>%
               trimws %>%
               stringr::str_replace_all(",", "")
           )[1]
@@ -151,7 +153,7 @@ impevi_binout <- function(
       ) %>%
       as.numeric
     
-    tbl_medians_continuous$median2[i] <- tbl_medians_continuous$stat_2[i] %>%
+    tbl_means_continuous$mean2[i] <- tbl_means_continuous$stat_2[i] %>%
       trimws %>%
       stringr::str_replace_all(",", "") %>%
       substr(
@@ -159,7 +161,39 @@ impevi_binout <- function(
         unlist(
           gregexpr(
             pattern = "\\(",
-            tbl_medians_continuous$stat_2[i] %>%
+            tbl_means_continuous$stat_2[i] %>%
+              trimws %>%
+              stringr::str_replace_all(",", "")
+          )[1]
+        ) - 1
+      ) %>%
+      as.numeric
+    
+    tbl_means_medians_continuous$median1[i] <- tbl_means_medians_continuous$stat_1[i] %>%
+      trimws %>%
+      stringr::str_replace_all(",", "") %>%
+      substr(
+        1,
+        unlist(
+          gregexpr(
+            pattern = "\\(",
+            tbl_means_medians_continuous$stat_1[i] %>%
+              trimws %>%
+              stringr::str_replace_all(",", "")
+          )[1]
+        ) - 1
+      ) %>%
+      as.numeric
+    
+    tbl_means_medians_continuous$median2[i] <- tbl_means_medians_continuous$stat_2[i] %>%
+      trimws %>%
+      stringr::str_replace_all(",", "") %>%
+      substr(
+        1,
+        unlist(
+          gregexpr(
+            pattern = "\\(",
+            tbl_means_medians_continuous$stat_2[i] %>%
               trimws %>%
               stringr::str_replace_all(",", "")
           )[1]
@@ -208,8 +242,13 @@ impevi_binout <- function(
     dplyr::rename(Ustatistic = statistic) %>%
     dplyr::left_join(
       
-      y = tbl_medians_continuous %>%
-        dplyr::mutate(median_difference = median2 - median1),
+      y = tbl_means_medians_continuous %>%
+        dplyr::mutate(
+          
+          mean_difference = mean2 - mean1,
+          median_difference = median2 - median1
+          
+        ),
       by = "variable"
       
     )
@@ -273,6 +312,7 @@ impevi_binout <- function(
       variable,
       var_type,
       Ustandardized,
+      mean_difference,
       median_difference
     ) %>%
     dplyr::bind_rows(tbl_importance_categorical) %>%

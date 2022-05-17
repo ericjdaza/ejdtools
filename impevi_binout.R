@@ -7,9 +7,7 @@
 #   statistical evidence = 1 - p-value (i.e., statistical significance)
 
 impevi_binout <- function(
-  datain, # the `_data` object output by gtsummary::tbl_summary() %>% gtsummary::as_gt()
-  cont_imp_var = "median_difference", #  "median_difference" or "Ustandardized"; importance metric to use for continuous variables
-  transform_cont_imp_var = FALSE # transform the importance values for continuous variables through log-base-10 transform of the absolute values
+  datain # the `_data` object output by gtsummary::tbl_summary() %>% gtsummary::as_gt()
 ) {
   
   
@@ -283,27 +281,6 @@ impevi_binout <- function(
       by = "variable"
     ) %>%
     dplyr::arrange(dplyr::desc(statistical_evidence_pvalue_flipped))
-  if (cont_imp_var == "Ustandardized") tbl_main <- tbl_main %>%
-    dplyr::mutate(
-      marginal_importance = case_when(
-        var_type == "continuous2" ~ Ustandardized,
-        var_type == "categorical" ~ compprop_median
-      )
-    )
-  if (cont_imp_var == "median_difference") tbl_main <- tbl_main %>%
-    dplyr::mutate(
-      marginal_importance = case_when(
-        var_type == "continuous2" ~ median_difference,
-        var_type == "categorical" ~ compprop_median
-      )
-    )
-  if (transform_cont_imp_var == TRUE) tbl_main <- tbl_main %>%
-    dplyr::mutate(
-      marginal_importance = case_when(
-        var_type == "continuous2" ~ log(abs(marginal_importance), 10),
-        var_type == "categorical" ~ marginal_importance
-      )
-    )
   
   
   # Return stuff.

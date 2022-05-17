@@ -8,7 +8,7 @@
 
 impevi_binout <- function(
   datain, # the `_data` object output by gtsummary::tbl_summary() %>% gtsummary::as_gt()
-  cont_imp_var = "Ustandardized", #  "median_difference" or "Ustandardized"; importance metric to use for continuous variables
+  cont_imp_var = "median_difference", #  "median_difference" or "Ustandardized"; importance metric to use for continuous variables
   transform_cont_imp_var = FALSE # transform the importance values for continuous variables through log-base-10 transform of the absolute values
 ) {
   

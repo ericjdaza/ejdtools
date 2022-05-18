@@ -1,5 +1,8 @@
 # Create a dataset with each variable's marginal importance and evidence for
-# differentiating a binary variable.
+# differentiating a binary variable. This function requires the Mann-Whitney U
+# (a.k.a. Wilcoxon) test to be run for continuous variables, and the Pearson's
+# chi-squared or Fisher's exact test to be run for categorical variables. These
+# are more accommodating than their normal-assuming counterparts (i.e., t-tests).
 # 
 # Definitions:
 # 

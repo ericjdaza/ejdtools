@@ -6,6 +6,90 @@
 #   marginal importance = the standardized difference between the two groups
 #   statistical evidence = 1 - p-value (i.e., statistical significance)
 
+# Helper functions.
+getMeansMedians <- function(
+  datain,
+  typeLabel # "Mean (SD)", "Median (IQR)"
+) {
+  
+  tbl_out <- datain %>%
+    dplyr::filter(
+      var_type == "continuous2",
+      label == typeLabel,
+      !is.na(stat_1),
+      !is.na(stat_2)
+    ) %>%
+    dplyr::distinct(
+      variable,
+      stat_1,
+      stat_2
+    ) %>%
+    dplyr::mutate(
+      
+      stat_1_var = NA,
+      stat_2_var = NA
+      
+    )
+  
+  # gregexpr code source: https://stackoverflow.com/questions/14249562/find-the-location-of-a-character-in-string
+  for (i in 1:nrow(tbl_out)) {
+    
+    tbl_out$stat_1_var[i] <- tbl_out$stat_1[i] %>%
+      trimws %>%
+      stringr::str_replace_all(",", "") %>%
+      substr(
+        1,
+        unlist(
+          gregexpr(
+            pattern = "\\(",
+            tbl_out$stat_1[i] %>%
+              trimws %>%
+              stringr::str_replace_all(",", "")
+          )[1]
+        ) - 1
+      ) %>%
+      as.numeric
+    
+    tbl_out$stat_2_var[i] <- tbl_out$stat_2[i] %>%
+      trimws %>%
+      stringr::str_replace_all(",", "") %>%
+      substr(
+        1,
+        unlist(
+          gregexpr(
+            pattern = "\\(",
+            tbl_out$stat_2[i] %>%
+              trimws %>%
+              stringr::str_replace_all(",", "")
+          )[1]
+        ) - 1
+      ) %>%
+      as.numeric
+    
+  }
+  
+  if (typeLabel == "Mean (SD)") {
+    
+    names(tbl_out)[names(tbl_out) == "stat_1_var"] <- "mean1"
+    names(tbl_out)[names(tbl_out) == "stat_2_var"] <- "mean2"
+    tbl_out <- tbl_out %>%
+      dplyr::mutate(mean_difference = mean2 - mean1)
+    
+  }
+  if (typeLabel == "Median (IQR)") {
+    
+    names(tbl_out)[names(tbl_out) == "stat_1_var"] <- "median1"
+    names(tbl_out)[names(tbl_out) == "stat_2_var"] <- "median2"
+    tbl_out <- tbl_out %>%
+      dplyr::mutate(median_difference = median2 - median1)
+    
+  }
+  
+  return(tbl_out)
+  
+}
+
+# Main function.
 impevi_binout <- function(
   datain # the `_data` object output by gtsummary::tbl_summary() %>% gtsummary::as_gt()
 ) {
@@ -112,98 +196,15 @@ impevi_binout <- function(
   rm(i)
   
   
-  # Get medians per group for importance calculations for continuous variables only.
-  tbl_means_medians_continuous <- datain %>%
-    dplyr::filter(
-      var_type == "continuous2",
-      label == "Median (IQR)",
-      !is.na(stat_1),
-      !is.na(stat_2)
-    ) %>%
-    dplyr::distinct(
-      variable,
-      stat_1,
-      stat_2
-    ) %>%
-    dplyr::mutate(
-      
-      mean1 = NA,
-      mean2 = NA,
-      median1 = NA,
-      median2 = NA
-      
-    )
-  
-  # gregexpr code source: https://stackoverflow.com/questions/14249562/find-the-location-of-a-character-in-string
-  for (i in 1:nrow(tbl_means_medians_continuous)) {
-    
-    tbl_means_continuous$mean1[i] <- tbl_means_continuous$stat_1[i] %>%
-      trimws %>%
-      stringr::str_replace_all(",", "") %>%
-      substr(
-        1,
-        unlist(
-          gregexpr(
-            pattern = "\\(",
-            tbl_means_continuous$stat_1[i] %>%
-              trimws %>%
-              stringr::str_replace_all(",", "")
-          )[1]
-        ) - 1
-      ) %>%
-      as.numeric
-    
-    tbl_means_continuous$mean2[i] <- tbl_means_continuous$stat_2[i] %>%
-      trimws %>%
-      stringr::str_replace_all(",", "") %>%
-      substr(
-        1,
-        unlist(
-          gregexpr(
-            pattern = "\\(",
-            tbl_means_continuous$stat_2[i] %>%
-              trimws %>%
-              stringr::str_replace_all(",", "")
-          )[1]
-        ) - 1
-      ) %>%
-      as.numeric
-    
-    tbl_means_medians_continuous$median1[i] <- tbl_means_medians_continuous$stat_1[i] %>%
-      trimws %>%
-      stringr::str_replace_all(",", "") %>%
-      substr(
-        1,
-        unlist(
-          gregexpr(
-            pattern = "\\(",
-            tbl_means_medians_continuous$stat_1[i] %>%
-              trimws %>%
-              stringr::str_replace_all(",", "")
-          )[1]
-        ) - 1
-      ) %>%
-      as.numeric
-    
-    tbl_means_medians_continuous$median2[i] <- tbl_means_medians_continuous$stat_2[i] %>%
-      trimws %>%
-      stringr::str_replace_all(",", "") %>%
-      substr(
-        1,
-        unlist(
-          gregexpr(
-            pattern = "\\(",
-            tbl_means_medians_continuous$stat_2[i] %>%
-              trimws %>%
-              stringr::str_replace_all(",", "")
-          )[1]
-        ) - 1
-      ) %>%
-      as.numeric
-    
-  }
-  rm(i)
-  
+  # Get means and medians per group for importance calculations for continuous variables only.
+  tbl_means_continuous <- getMeansMedians(
+    datain = datain,
+    "Mean (SD)"
+  )
+  tbl_medians_continuous <- getMeansMedians(
+    datain = datain,
+    "Median (IQR)"
+  )
   
   # Calculate importance per predictor variable type.
   
@@ -241,16 +242,12 @@ impevi_binout <- function(
     dplyr::mutate(Ustandardized = 1 - statistic / Umax) %>%
     dplyr::rename(Ustatistic = statistic) %>%
     dplyr::left_join(
-      
-      y = tbl_means_medians_continuous %>%
-        dplyr::mutate(
-          
-          mean_difference = mean2 - mean1,
-          median_difference = median2 - median1
-          
-        ),
+      y = tbl_means_continuous,
       by = "variable"
-      
+    ) %>%
+    dplyr::left_join(
+      y = tbl_medians_continuous,
+      by = "variable"
     )
   
   ## Categorical predictor variables

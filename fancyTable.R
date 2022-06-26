@@ -4,7 +4,7 @@ fancyTable <- function(
   round_digits = 2,
   margin_value = 2, # 1 = row percentages, 2 = col percentages
   print_output_type = "kable", # "kable" or "tblmat"
-  kable_type = NA
+  kable_type = "simple"
 ) {
   
   n <- table(datain[varnames], useNA = "ifany")

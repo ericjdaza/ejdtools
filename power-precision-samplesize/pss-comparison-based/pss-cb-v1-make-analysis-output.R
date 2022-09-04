@@ -16,7 +16,7 @@ pacman::p_load(tidyverse, knitr, ggpubr) # e.g., naniar, extrafont, tidyverse, r
 
 ## Set global parameters.
 scalar_seed <- # e.g., set to your current datetime
-  output_path <- "/LocalPath/data/MyProjectFolder/" # your local path and project folder within the "data" folder
+output_path <- "/LocalPath/data/MyProjectFolder/" # your local path and project folder within the "data" folder
 
 
 

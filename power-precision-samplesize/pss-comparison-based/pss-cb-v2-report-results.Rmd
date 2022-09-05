@@ -1,5 +1,5 @@
 ---
-title: "Project: The VICS21 Study: Power and Sample Size Calculations"
+title: "Project: [inser project name or codename]: Power and Sample Size Calculations"
 author: "[Eric J. Daza, DrPH, MPS](https://www.ericjdaza.com/)"
 date: "`r Sys.Date()`"
 output:
@@ -69,6 +69,20 @@ tbl_sims_sentence_chosen <- tbl_sims_sentences_ntests %>%
 
 
 
+# Executive Summary ((optional))
+
+
+
+
+
+# Background
+
+Refer to the study protocol.
+
+
+
+
+
 # Objective
 
 We want to statistically discern or detect a hypothesized true average difference (i.e., association or effect size) of size $\delta$ or larger in continuous outcomes $Y$ between `r tbl_pss_parameters$num_of_tests` treatment groups. We will assume these outcomes vary with the same standard deviation (SD) $\sigma_Y$ in both groups. These two quantities are often combined as Cohen's $d$, defined as $d = \delta \big/ \sigma_Y$. We will also assume these outcomes are fairly normally distributed, allowing us to rely on Cohen's $d$ and the two-sample t-test in our calculations carried out via the R command `pwr::pwr.t.test()`.
@@ -77,11 +91,127 @@ We want to statistically discern or detect a hypothesized true average differenc
 
 
 
-# Methods
+# Results
 
 
 
-## Basic Setup and Parameters
+## Parameters Chosen
+
+The most conservative sample size will be the largest one we anticipate needing. To calculate this, we need to use the smallest hypothesized true average difference between the `r tbl_pss_parameters$num_of_tests` research hypotheses, along with the outcome with the largest SD. Based on our literature review and scientific judgment, we will assume that the smallest true average difference is `r tbl_pss_parameters$delta_primary` units, and that the largest SD of pre- and post-treament outcomes in both groups is `r tbl_pss_parameters$sd_primary`. The same sample size results will apply if the smallest true average difference is `r tbl_pss_parameters$delta_secondary %>% round(2)` units, and the largest SD of pre- and post-treament outcomes in both groups is `r tbl_pss_parameters$sd_secondary`.
+
+We will conduct `r tbl_pss_parameters$num_of_tests` main statistical hypothesis tests. These correspond to our primary and secondary research hypotheses or endpoints. We will use a Bonferroni correction that equally splits the familywise $\alpha$ among `r tbl_pss_parameters$num_of_tests` tests; i.e., each test's $\alpha$ is equal to $\alpha$/`r tbl_pss_parameters$num_of_tests`.
+
+<!-- ((example ICC text 1)) The literature supports a pre-post intraclass correlation (ICC) per participant of `r chosen_icc` for the StudySurvey scale. This is based on using Cronbach's $\alpha$ as a proxy for the ICC ([de Vet et al, 2017](https://www.sciencedirect.com/science/article/abs/pii/S0895435617302494)). The relevant Cronbach's $\alpha$ value is ??? in the ??? row of Table ??? of [study domain reference](link) as a reasonable proxy. -->
+
+((example ICC text 2)) The literature supports a pre-post intraclass correlation (ICC) per participant of `r chosen_icc` for the StudySurvey scale. This is based on using the smallest StudySurvey test-retest ICC of [study domain reference](link). We will assume that at most `r tbl_pss_parameters$p_attrition * 100`% of participants on each arm may drop out before study completion.
+
+
+
+## Main Recommendation
+
+*We will enroll at least `r tbl_sims_final_chosen$sampsize_attrition` participants per arm. `r tbl_sims_sentence_chosen$Description`*
+
+
+
+## Other Scenarios
+
+The naive Cohen's $d$ (i.e., before adjusting for ICC, or equivalently setting the ICC to 0.5) is `r tbl_pss_parameters$cohens_d_naive %>% round(3)`. The Cohen's $d$ we will use accounts for the ICC, and is equal to $d = \delta \big/ \sqrt{2 \sigma^2 (1 - ICC)}$, where $\sigma^2$ represents the variance of raw outcomes in either group at either pre- or post-treatment (see Appendix).
+
+Here is an example of two extremes of required sample sizes for two-sample tests:
+
+- `r tbl_sims_sentences_ntests$Description[tbl_sims_final_ntests$sampsize == min(tbl_sims_final_ntests$sampsize, na.rm = TRUE)]`
+- `r tbl_sims_sentences_ntests$Description[tbl_sims_final_ntests$sampsize == max(tbl_sims_final_ntests$sampsize, na.rm = TRUE)]`
+
+The trend between these extremes is illustrated below.
+
+- For any particular tolerable overall FPR, the number of participants required in each group increases with higher desired statistical power.
+- For any particular FPR and power, the number of participants decreases with higher ICC.
+
+```{r echo=FALSE, out.width="100%", fig.cap="One Sample: One Statistical Test"}
+tbl_sims_fancy_ntests %>% knitr::kable("simple")
+```
+
+
+
+
+
+# Appendix ((optional))
+
+
+
+## Conceptual Review ((optional but recommended))
+
+Statistical power and margin-of-error analyses are used to determine whether a sample may be “adequate or large enough” to discern a true, unknown quantity using a quantity calculated from an observable study sample.
+
+
+### ((Text for Confirmatory Studies))
+
+In a confirmatory study, we seek to test pre-planned or “a priori” scientific hypotheses. The burden of proof is to show that the hypothesis might be true, compared to the “baseline” truth in which it is false (i.e., a “null” hypothesis). The relevant calculations involve statistical power or precision, and try to ensure that study findings have a good chance of being statistically discernible, defined as having statistically significant p-values when compared to a null truth (which may be contrary to the actual but unknown true quantity).
+
+
+### ((Text for Exploratory Studies))
+
+In an exploratory study, we seek to characterize largely unknown relationships between ill-defined variables; i.e., generate scientific hypotheses to be tested in follow-up studies. While some calculations involve comparisons (as in confirmatory studies), many if not most do not involve comparisons because there are few hypotheses to confirm.
+
+((optional)) We should still propose a priori hypotheses whenever possible in exploratory studies. A priori hypotheses will be the most generalizable because they will not rely on our data (i.e., they are created before seeing any study data). Hypotheses created using our data in the course of the study cannot use that same dataset to generalize them. To do so is called “hypothesizing after the results are known” (HARKing), a common precursor to p-hacking. HARKing is akin to overfitting in machine learning, and leads to over-confident conclusions that our study findings reflect true quantities (i.e., generalize).
+
+
+### Making Comparisons: Power Analysis ((include if used))
+
+A power analysis is used to characterize the relationship between these six core interdependent components:
+
+1. differences in mean outcomes of interest across two or more categorical levels of another variable (e.g., effect sizes, association magnitudes)
+1. number of statistical hypothesis tests to be conducted (e.g., research objectives)
+1. outcome standard deviations (SDs)
+1. outcome distributions (e.g., normal, binomial)
+1. statistical properties (i.e., maximum false positive rates (FPRs) or statistical significance levels like $\alpha = 0.05$, statistical power values like $1 - \beta = 0.8$)
+1. sample sizes
+
+A power analysis must characterize the possible scenarios given pre-specified components. The more components are specified, the fewer the scenarios it must characterize. Note that Cohen’s $d$ for equal group sizes is equal to a difference in mean outcomes (for a given outcome) divided by the outcome SD (i.e., #1 divided by #2 for a given outcome).
+
+#### ((Text for Confirmatory Studies))
+
+In most simple confirmatory studies, only one of these components is unspecified; e.g., for one test with a specified difference, set of outcome SDs, normal distributions, maximum FPR of 0.01, and statistical power of 85%, we can calculate the corresponding sample size. Power analyses are statistically useful in these cases because they (in tandem with the SAP) allow a more detailed statistical characterization of scientific conclusions.
+
+#### ((Text for Exploratory Studies))
+
+In an exploratory study, we often cannot reasonably specify components 1-4, while we can specify 5 and 6 through tradition or common practice (e.g., maximum FPR level of 0.05, power of 0.80), and budgetary, logistical, or study feasibility constraints (e.g., sample size of 200 per participant group, cohort, or treatment/intervention arm/condition). Hence, a reasonable power analysis would have to characterize a multitude of scenarios corresponding to different numbers of tests, different mean outcomes, different outcome SDs, and different outcome distributions.
+
+Such results cannot be used to make a solid recommendation to pick from a few design options (as is common in confirmatory studies where most components are known). However, they can be used to strengthen the current study’s findings, which can be used to provide power analysis components for a future confirmatory study.
+
+
+### Establishing Precision: Margin of Error Analysis ((include if used))
+
+For hypotheses that are not stated as comparisons to a null, statistical power or statistical significance is undefined. Instead, the relevant calculations try to ensure that study findings have a good chance of being statistically discernible, defined as having a certain degree of estimator precision. For example, for an outcome with a given standard deviation, we can calculate the sample size needed to ensure a particular margin of error (MOE) corresponding to a certain size of confidence interval (CI).
+
+The MOE formula is $MOE = z_{1-\alpha/2} \sigma/\sqrt{n}$, where $z_{1-\alpha/2}$ is the z-score corresponding to confidence level $1 - \alpha/2$ (e.g., 0.975 for a 95% CI),  is the outcome standard deviation (SD), and $n$ is the sample size. Hence, a MOE analysis is used to characterize the relationship between these six core interdependent components:
+
+1. outcome SD
+1. outcome distribution (e.g., normal, binomial)
+1. statistical properties (i.e., CI or MOE and confidence level)
+1. sample size
+
+An MOE analysis must characterize the possible scenarios given pre-specified components. The more components are specified, the fewer the scenarios it must characterize.
+
+#### ((Text for Confirmatory Studies))
+
+In most confirmatory studies (like this one), only one of these components is unspecified; e.g., for one normally distributed outcome with a known SD and desired 95% confidence interval (CI) or MOE, we can calculate the corresponding sample size. MOE analyses are statistically useful in these cases because they (in tandem with the SAP) allow a more detailed statistical characterization of scientific conclusions.
+
+#### ((Text for Exploratory Studies))
+
+In an exploratory study (like this one), we often cannot reasonably specify components 1 and 2, while we can specify 3 and 4 through tradition or common practice (e.g., 95% CI of ± 0.1), and budgetary, logistical, or study feasibility constraints (e.g., sample size of 200). Hence, a reasonable MOE analysis would have to characterize a multitude of scenarios corresponding to different outcome SDs and distributions.
+
+Such results cannot be used to make a solid recommendation to pick from a few design options (as is common in confirmatory studies where most components are known). However, they can be used to strengthen the current study’s findings, which can be used to provide power analysis components for a future confirmatory study.
+
+
+### Accounting for Attrition (WIP)
+
+
+
+## Methods
+
+
+### Basic Setup and Parameters
 
 To do so requires a certain sample size $n$, which depends on the following two quantities.
 
@@ -98,11 +228,9 @@ In formal deliverables and manuscripts, we will avoid using the phrase "statisti
 Furthermore, if our estimation method or "estimator" is statistically consistent (which standard estimators are), then we can further conclude that a given estimate is unbiased for the true average difference with a large enough sample. This hypothesized true average difference is exactly what we use to determine the statistical power we want.
 
 
+### Adjustment Parameters
 
-## Adjustment Parameters
-
-
-### Number of Tests
+#### Number of Tests
 
 There is often more than one pre-planned statistical hypothesis test. The number of such tests corresponds with the number of research hypothesis findings that we would like to claim generalize beyond our study; i.e., generalizable findings are reproducible, meaning they can be approximately reproduced by another similar study with a different sample. These are called *a priori* or *ex ante* hypotheses because we document them before collecting or analyzing any study data. Analysis findings from a priori hypotheses are the most generalizable, compared to hypotheses generated or analysis adjusted after starting to collect or analyze data. See **Appendix: Confirmatory vs. Exploratory Objectives** for why.
 
@@ -110,8 +238,7 @@ The desired generalizable findings often correspond to a study's main research h
 
 For $m$ tests, we must adjust the FPR for each test in a way that preserves the overall or familywise $\alpha$ (as in the "family" of $m$ tests). This is called *multiplicity adjustment*. The easiest such adjustment is a simple *Bonferroni correction*, which equally splits the familywise $\alpha$ in $m$; i.e., each test's FPR is equal to $\alpha / m$.
 
-
-### Repeated Measures: Intraclass Correlation
+#### Repeated Measures: Intraclass Correlation
 
 The outcome of interest is a change or difference between pre- and post-treatment raw outcomes, denoted as $Y = Y_{post} - Y_{pre}$. For any participant, each pre-post outcome may be correlated. For example, if a participant's pre-treatment outcome is high, their post-treatment outcome may increase or decrease, but may also be high. This is called the intraclass correlation (ICC), where a "class" (or cluster) in our case is a participant.
 
@@ -119,86 +246,13 @@ We must account for the ICC in our power and sample size (PSS) calculations. The
 
 Let $\sigma^2$ represent the variance of raw outcomes in either group at either pre- or post-treatment. Then the SD of the pre-post difference $Y$ in either group is $\sigma_Y = \sqrt{2 \sigma^2 (1 - ICC)}$ (see **Appendix: Repeated Measures**). From this, we see that the higher the positive ICC, the lower the variance of the pre-post difference. This lowers the sample size we'd need if $ICC > 0.5$. Specifically, if $ICC = 0.5$, then the variance we'd specify in our PSS calculations is simply $\sigma^2$, the variance of outcomes at either pre or post period.
 
-### Anticipated Attrition
+#### Anticipated Attrition
 
 Some participants may drop out of the study before the end of the study period. We say they "dropped out" or the study, or are "lost to follow-up", a process also called study sample attrition.
 
 We will need to enroll a larger sample than needed to account for the maximum amount of anticipated attrition. This may occur, for example, due to non-engagement, non-adherence, or non-compliance with the treatment.
 
 Let $p_{att}$ represent the anticipated proportion of attrition. The minimum larger sample needed to accommodate $p_{att} \times 100$% attrition is equal to $n_{adj} = n / (1 - p_{att})$.
-
-
-
-
-
-# Results: Sample Sizes Needed
-
-
-
-## Parameters Chosen
-
-The most conservative sample size will be the largest one we anticipate needing. To calculate this, we need to use the smallest hypothesized true average difference between the `r tbl_pss_parameters$num_of_tests` research hypotheses, along with the outcome with the largest SD. Based on our literature review and scientific judgement, we will assume that the smallest true average difference is `r tbl_pss_parameters$delta_primary` units, and that the largest SD of pre- and post-treament outcomes in both groups is `r tbl_pss_parameters$sd_primary`. The same sample size results will apply if the smallest true average difference is `r tbl_pss_parameters$delta_secondary %>% round(2)` units, and the largest SD of pre- and post-treament outcomes in both groups is `r tbl_pss_parameters$sd_secondary`.
-
-We will conduct `r tbl_pss_parameters$num_of_tests` main statistical hypothesis tests. These correspond to our primary and secondary research hypotheses or endpoints. We will use a Bonferroni correction that equally splits the familywise $\alpha$ in `r tbl_pss_parameters$num_of_tests`; i.e., each test's $\alpha$ is equal to $\alpha$/`r tbl_pss_parameters$num_of_tests`.
-
-<!-- The literature supports an ICC of 0.78 for the Medical Outcomes Study (MOS) Sleep Scale Problems Index II 9-item subscale. This is based on using Cronbach's $\alpha$ as a proxy for the ICC ([de Vet et al, 2017](https://www.sciencedirect.com/science/article/abs/pii/S0895435617302494)). The relevant Cronbach's $\alpha$ value is 0.78 in the last row of Table 2 of [Allen et al (2009)](https://www.sciencedirect.com/science/article/abs/pii/S1389945708001627) as a reasonable proxy. We will assume that at most `r tbl_pss_parameters$p_attrition * 100`% of participants on each arm may drop out before study completion. -->
-
-The literature supports an ICC of `r chosen_icc` for the Medical Outcomes Study (MOS) Sleep Scale Problems Index II 9-item subscale. This is based on using the smallest MOS test-retest ICC of [Rejas et al (2007)](https://www.sciencedirect.com/science/article/abs/pii/S1090380106000681). We will assume that at most `r tbl_pss_parameters$p_attrition * 100`% of participants on each arm may drop out before study completion.
-
-
-
-## Main Recommendation
-
-*We will enroll at least `r tbl_sims_final_chosen$sampsize_attrition` participants per arm. `r tbl_sims_sentence_chosen$Description`*
-
-
-
-## Other Scenarios
-
-The naive Cohen's $d$ (i.e., before adjusting for ICC, or equivalently setting the ICC to 0.5) is `r tbl_pss_parameters$cohens_d_naive %>% round(3)`. The Cohen's $d$ we will use accounts for the ICC, and is equal to $d = \delta \big/ \sqrt{2 \sigma^2 (1 - ICC)}$.
-
-Here is an example of two extremes of required sample sizes for two-sample tests:
-
-- `r tbl_sims_sentences_ntests$Description[tbl_sims_final_ntests$sampsize == min(tbl_sims_final_ntests$sampsize, na.rm = TRUE)]`
-- `r tbl_sims_sentences_ntests$Description[tbl_sims_final_ntests$sampsize == max(tbl_sims_final_ntests$sampsize, na.rm = TRUE)]`
-
-The trend between these extremes is illustrated below.
-- For any particular tolerable overall FPR, the number of participants required in each group increases with higher desired statistical power.
-- For any particular FPR and power, the number of participants decreases with higher ICC.
-
-```{r echo=FALSE, out.width="100%", fig.cap="One Sample: One Statistical Test"}
-tbl_sims_fancy_ntests %>% knitr::kable("simple")
-```
-
-
-
-
-
-# Appendix
-
-
-
-## Why and How to Drop the Phrase "Statistical Significance"
-
-From above, notice that statistical significance strictly applies to p-values, not estimates. So phrases like "there was a statistically significant difference" are ill-defined. Such phrases are also scientifically disingenuous because they are often interpreted as "there was a significant or scientifically important difference". However, there is nothing in the definition of statistical significance about significance (unqualified) or scientific importance.
-
-Put simply, statistical significance has nothing to do with significance. The phrase "statistical significance" unfortunately has come to perpetuate institutionalized intellectual dishonesty. It has led to the current global replication crisis in biomedicine, psychology, and beyond---a result of decades of publishing and "file-drawer" bias due to misaligned incentives that conflate "statistical significance" with "scientific importance" while paying lip service to doing no such thing.
-
-Some alternatives are to shorten "statistically significant" to simply "statistical"---or better yet, to "discernible", "detectable", "apparent", "evident", or "inferrable". For solutions, please see [twitter.com/ericjdaza/status/1382413617572708356](https://twitter.com/ericjdaza/status/1382413617572708356). I have successfully published a paper within minimal use of the phrase "statistical significance"; see [twitter.com/ericjdaza/status/1372851369317568512](https://twitter.com/ericjdaza/status/1372851369317568512) for how I did it.
-
-In general, I highly recommend citing [McShane et al (2019)](https://amstat.tandfonline.com/doi/full/10.1080/00031305.2018.1527253), [Wasserstein et al (2019)](https://www.tandfonline.com/doi/full/10.1080/00031305.2019.1583913), and [Wasserstein and Lazar (2016)](https://www.tandfonline.com/doi/full/10.1080/00031305.2016.1154108) (see **References**) as the definitive/authoritative leading statistical science references in support of this lexical strategy. They can also be used to carefully but firmly rebuff reviewer suggestions to keep "statistical significance".
-
-
-
-## Confirmatory vs. Exploratory Objectives
-
-Confirmatory study objectives seek to test or confirm a priori hypotheses. They are written with the intent to make the claim that this particular study's findings further confirm those a priori hypotheses. In theory, if these findings "confirm" the a priori hypotheses, this result strengthens those hypotheses by providing more evidence that they hold true more generally. Hence, the findings should be generalizable.
-
-After we collect or analyze the study data, we may come up with (i.e., generate) more realistic *post hoc* or *ex post* scientific hypotheses. This is called "exploratory analysis, and often happens by adjusting tests or models after the first time the test is conducted or model is fit. But these post hoc hypotheses carry the risk of overfitting; i.e., these seemingly more realstic hypotheses that seem to "fit the data better" may not be reproducible because they are idiosyncratic to our particular sample. The only way to properly assess the degree of idiosyncracy is by collecting another sample and fitting the post hoc model, doing this every time we adjust the model.
-
-This overfitting process is also called "hypothesizing after the results are known" (HARKing). An very infamous version of HARKing is called *p-hacking*, whereby this post hoc hypothesizing is specifically carried out to find and report findings that are "statistically significant"---but may be clinically or scientifically useless or meaningless. (See **Appendix: Why and How to Drop the Phrase "Statistical Significance"**.)
-
-A good way to safeguard these is to describe in as much detail as possible the possible types of exploratory analyses we might run. We would list these in our study protocol under a section called something like "exploratory objectives" or "exploratory endpoints".
 
 
 
@@ -299,15 +353,15 @@ d_1
 If $\delta_1$ = `r tbl_pss_parameters$delta_primary`, $\sigma_1$ = `r tbl_pss_parameters$sd_primary`, and $\sigma_2$ = `r tbl_pss_parameters$sd_secondary`, then $\delta_2$ = `r tbl_pss_parameters$delta_secondary %>% round(2)`.
 
 
+## Why and How to Drop the Phrase "Statistical Significance"
 
+From above, notice that statistical significance strictly applies to p-values, not estimates. So phrases like "there was a statistically significant difference" are ill-defined. Such phrases are also scientifically disingenuous because they are often interpreted as "there was a significant or scientifically important difference". However, there is nothing in the definition of statistical significance about significance (unqualified) or scientific importance.
 
+Put simply, statistical significance has nothing to do with significance. The phrase "statistical significance" unfortunately has come to perpetuate institutionalized intellectual dishonesty. It has led to the current global replication crisis in biomedicine, psychology, and beyond---a result of decades of publishing and "file-drawer" bias due to misaligned incentives that conflate "statistical significance" with "scientific importance" while paying lip service to doing no such thing.
 
-# Process Lessons Learned (Learnings)
+Some alternatives are to shorten "statistically significant" to simply "statistical"---or better yet, to "discernible", "detectable", "apparent", "evident", or "inferrable". For solutions, please see [twitter.com/ericjdaza/status/1382413617572708356](https://twitter.com/ericjdaza/status/1382413617572708356). I have successfully published a paper within minimal use of the phrase "statistical significance"; see [twitter.com/ericjdaza/status/1372851369317568512](https://twitter.com/ericjdaza/status/1372851369317568512) for how I did it.
 
-Add lessons learned here. Examples include things that add time, like:
-- parameters (e.g., means, standard deviations) having to be derived from the literature because they aren't reported explicitly, with explanations and justifications for why your derivations are reasonable
-- more complex designs, like a cluster randomized trial (which necessitates setting an ICC between participants within each cluster)
-
+In general, I highly recommend citing [McShane et al (2019)](https://amstat.tandfonline.com/doi/full/10.1080/00031305.2018.1527253), [Wasserstein et al (2019)](https://www.tandfonline.com/doi/full/10.1080/00031305.2019.1583913), and [Wasserstein and Lazar (2016)](https://www.tandfonline.com/doi/full/10.1080/00031305.2016.1154108) (see **References**) as the definitive/authoritative leading statistical science references in support of this lexical strategy. They can also be used to carefully but firmly rebuff reviewer suggestions to keep "statistical significance".
 
 
 
@@ -315,20 +369,21 @@ Add lessons learned here. Examples include things that add time, like:
 
 # References
 
-<!-- - Allen RP, Kosinski M, Hill-Zabala CE, Calloway MO. Psychometric evaluation and tests of validity of the Medical Outcomes Study 12-item Sleep Scale (MOS sleep). Sleep medicine. 2009 May 1;10(5):531-9. [sciencedirect.com/science/article/abs/pii/S1389945708001627](https://www.sciencedirect.com/science/article/abs/pii/S1389945708001627) -->
-
-- Ashbaugh AR, Houle-Johnson S, Herbert C, El-Hage W, Brunet A. Psychometric validation of the English and French versions of the Posttraumatic Stress Disorder Checklist for DSM-5 (PCL-5). PloS one. 2016 Oct 10;11(10):e0161645. [journals.plos.org/plosone/article?id=10.1371/journal.pone.0161645](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0161645)
-
-- Blevins CA, Weathers FW, Davis MT, Witte TK, Domino JL. The posttraumatic stress disorder checklist for DSM‐5 (PCL‐5): Development and initial psychometric evaluation. Journal of traumatic stress. 2015 Dec;28(6):489-98. [dx.doi.org/10.1002/jts.22059](http://dx.doi.org/10.1002/jts.22059)
-
-- Bovin MJ, Marx BP, Weathers FW, Gallagher MW, Rodriguez P, Schnurr PP, Keane TM. Psychometric properties of the PTSD checklist for diagnostic and statistical manual of mental disorders–fifth edition (PCL-5) in veterans. Psychological assessment. 2016 Nov;28(11):1379. [ptsd.va.gov/professional/articles/article-pdf/id44666.pdf](http://www.ptsd.va.gov/professional/articles/article-pdf/id44666.pdf)
-
 - McShane BB, Gal D, Gelman A, Robert C, Tackett JL. Abandon statistical significance. The American Statistician. 2019 Mar 29;73(sup1):235-45. [amstat.tandfonline.com/doi/full/10.1080/00031305.2018.1527253](https://amstat.tandfonline.com/doi/full/10.1080/00031305.2018.1527253)
-
-- Rejas J, Ribera MV, Ruiz M, Masrramón X. Psychometric properties of the MOS (Medical Outcomes Study) Sleep Scale in patients with neuropathic pain. European Journal of Pain. 2007 Apr 1;11(3):329-40. [sciencedirect.com/science/article/abs/pii/S1090380106000681](https://www.sciencedirect.com/science/article/abs/pii/S1090380106000681)
 
 <!-- - de Vet HC, Mokkink LB, Mosmuller DG, Terwee CB. Spearman–Brown prophecy formula and Cronbach's alpha: different faces of reliability and opportunities for new applications. Journal of Clinical Epidemiology. 2017 May 1;85:45-9. [sciencedirect.com/science/article/abs/pii/S0895435617302494](https://www.sciencedirect.com/science/article/abs/pii/S0895435617302494) -->
 
 - Wasserstein, Ronald L., Allen L. Schirm, and Nicole A. Lazar. "Moving to a world beyond “p< 0.05”." (2019): 1-19. [tandfonline.com/doi/full/10.1080/00031305.2019.1583913](https://www.tandfonline.com/doi/full/10.1080/00031305.2019.1583913)
 
 - Wasserstein, Ronald L., and Nicole A. Lazar. "The ASA statement on p-values: context, process, and purpose." (2016): 129-133. [tandfonline.com/doi/full/10.1080/00031305.2016.1154108](https://www.tandfonline.com/doi/full/10.1080/00031305.2016.1154108)
+
+
+
+
+
+# ((INTERNAL USE ONLY)) Learnings: Process Lessons Learned ((optional but recommended))
+
+Add lessons learned here. Examples include things that add time to doing these calculations, like:
+- parameters (e.g., means, standard deviations) having to be derived from the literature because they aren't reported explicitly, with explanations and justifications for why your derivations are reasonable
+- different pre-post time intervals between what's in the literature and your study design; may require adjustment (e.g., linear extrapolation) if the anticipated effect or association size depends on the time between pre- and post-
+- more complex designs, like a cluster randomized trial (which necessitates setting an ICC between participants within each cluster)

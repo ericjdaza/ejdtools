@@ -291,8 +291,9 @@ The t-statistic variance formula has been straightforward so far. But what is th
 Let $Y_{x,i,pre}$ and $Y_{x,i,post}$ denote the two sequential measures per participant during the pre and post periods, respectively. Then the per-participant difference is $Y_{x,i} = Y_{x,i,post} - Y_{x,i,pre}$, yielding $Var(Y) = Var \left( Y_{post} - Y_{pre} \right)$. Recall that
 \[
 ICC = \frac{Cov \left( Y_{post}, Y_{pre} \right)}{\sqrt{Var \left( Y_{post} \right) Var \left( Y_{pre} \right)}}
-.
+,
 \]
+as in equation (2) of Eldridge et al (2009) (i.e., the [standard definition of correlation](https://en.wikipedia.org/wiki/Correlation_and_dependence)). Here, we make what Eldridge et al call the "common correlation, compound symmetry, or exchangeability assumption", as defined in Liang and Zeger (1986).
 
 We have:
 \[
@@ -368,6 +369,10 @@ In general, I highly recommend citing [McShane et al (2019)](https://amstat.tand
 
 
 # References
+
+- Eldridge SM, Ukoumunne OC, Carlin JB. The intra‐cluster correlation coefficient in cluster randomized trials: a review of definitions. International Statistical Review. 2009 Dec;77(3):378-94. [onlinelibrary.wiley.com/doi/abs/10.1111/j.1751-5823.2009.00092.x](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1751-5823.2009.00092.x)
+
+- Liang KY, Zeger SL. Longitudinal data analysis using generalized linear models. Biometrika. 1986 Apr 1;73(1):13-22. [academic.oup.com/biomet/article/73/1/13/246001](https://academic.oup.com/biomet/article/73/1/13/246001)
 
 - McShane BB, Gal D, Gelman A, Robert C, Tackett JL. Abandon statistical significance. The American Statistician. 2019 Mar 29;73(sup1):235-45. [amstat.tandfonline.com/doi/full/10.1080/00031305.2018.1527253](https://amstat.tandfonline.com/doi/full/10.1080/00031305.2018.1527253)
 

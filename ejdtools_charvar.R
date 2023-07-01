@@ -110,3 +110,15 @@ ejdtools_charvar <- function(
   tbl_out
   
 }
+
+# Wrapper function to bind rows over multiple variables into one tibble.
+ejdtools_charvar_allvars <- function(data) {
+    
+    for (varname in names(data)) {
+        if (varname == names(data)[1]) output <- data %>% ejdtools_charvar(varname = varname)
+        if (varname != names(data)[1]) output <- output %>%
+            dplyr::bind_rows(data %>% ejdtools_charvar(varname = varname))
+    }
+    return(output)
+    
+}

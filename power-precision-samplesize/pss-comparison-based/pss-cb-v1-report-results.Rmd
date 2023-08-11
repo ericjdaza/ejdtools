@@ -1,0 +1,110 @@
+---
+  title: "Project: MyProjectName" # set to your project name
+author: "MyFirstName MyLastName, MyCredentials (MyTitle - MyOrganization)" # write your name, credentials, title, and organization here
+date: "`r format(Sys.time(), '%d %B %Y %A')`"
+output: pdf_document
+---
+  
+```{r include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r include=FALSE}
+# Project: stat-sci-support: Power and Sample Size Calculations based on Comparing Expectations
+#   Description: Power and sample size justification for common requests with vague research
+#     hypotheses involving comparisons (e.g., one-sample, two-sample) and possible multiple
+#     testing (i.e., multiplicity).
+
+
+
+# Preliminary processing
+
+
+## Clear environment and install/load packages.
+rm(list=ls())
+if (!require("pacman")) install.packages("pacman") # just to make sure "pacman" is installed
+pacman::p_load(tidyverse, knitr, ggpubr) # e.g., naniar, extrafont, tidyverse, reshape2, janitor, lubridate, jsonlite, arsenal, knitr, feather
+
+
+## Set global parameters.
+scalar_seed <- # e.g., set to your current datetime
+output_path <- "/LocalPath/data/MyProjectFolder/" # your local path and project folder within the "data" folder
+
+
+
+# Load datasets or data image.
+tbl_sims_final_ntests1 <- readr::read_csv(paste0(output_path, "tbl_sims_final_ntests1.csv")) # should match make-analysis-output.R outputs you created
+tbl_sims_final_ntests50 <- readr::read_csv(paste0(output_path, "tbl_sims_final_ntests50.csv")) # should match make-analysis-output.R outputs you created
+tbl_sims_fancy_ntests1 <- readr::read_csv(paste0(output_path, "tbl_sims_fancy_ntests1.csv")) # should match make-analysis-output.R outputs you created
+tbl_sims_fancy_ntests50 <- readr::read_csv(paste0(output_path, "tbl_sims_fancy_ntests50.csv")) # should match make-analysis-output.R outputs you created
+```
+
+
+
+# Summary
+
+
+## Discerning One Average Difference
+
+For continuous outcomes that are fairly normally distributed, a sample size of `r unique(tbl_sims_final_ntests1$sampsize_n)` allows us to statistically discern an average difference in outcomes (e.g., association sizes, effect sizes) that vary by a certain amount, or standard deviation (SD).
+
+Suppose we want to statistically discern if an average outcome is different from a certain number. For example, if this number is zero (e.g., representing no association, effect, etc. in the studied population), then:
+  
+  - `r tbl_sims_fancy_ntests1$Description[tbl_sims_fancy_ntests1$Scenario == 1]`
+- `r tbl_sims_fancy_ntests1$Description[tbl_sims_fancy_ntests1$Scenario == 6]`
+
+Now suppose we want to statistically discern if an average outcome is different between two different groups, labeled A and B. Then:
+  
+  - `r tbl_sims_fancy_ntests1$Description[tbl_sims_fancy_ntests1$Scenario == 7]`
+- `r tbl_sims_fancy_ntests1$Description[tbl_sims_fancy_ntests1$Scenario == 12]`
+
+
+## Discerning More than One Average Difference
+
+Suppose we plan to conduct more than one statistical test (e.g., include more than one predictor, covariate, or feature in a model). This means we will require outcomes that vary less (i.e., exhibit a smaller SD) for a given desired average difference, or will only be able to discern greater average differences for a given SD.
+
+For example, if we plan to run `r unique(tbl_sims_final_ntests50$num_of_tests)` tests (e.g., fit and re-run a model with `r unique(tbl_sims_final_ntests50$num_of_tests)/10` predictors `r unique(tbl_sims_final_ntests50$num_of_tests)/5` times) at an overall confidence level of 95%, then a Bonferroni correction splits that confidence for one test across `r unique(tbl_sims_final_ntests50$num_of_tests)` tests. This approach means we have to be `r round((1 - 0.05 / unique(tbl_sims_final_ntests50$num_of_tests)) * 100, 2)`% confident in any given test. The smallest average difference for any of these tests correspond to the following:
+  
+  - `r tbl_sims_fancy_ntests50$Description[tbl_sims_fancy_ntests50$Scenario == 7]`
+- `r tbl_sims_fancy_ntests50$Description[tbl_sims_fancy_ntests50$Scenario == 12]`
+
+
+
+# General Trends and Trade-Offs
+
+
+## Trends
+
+Refer to the following figures of simulated data for one-sample tests, two-sample tests, and more than one two-sample test (i.e., `r unique(tbl_sims_final_ntests50$num_of_tests)` tests in our example). Each figure displays most if not all `r unique(tbl_sims_final_ntests1$sampsize_n)` simulated outcomes; a few may be out of range. The true average difference is drawn as a heavy black dot, and the true confidence interval (for varying confidence levels) is drawn as a pair of error bars.
+
+Examine each figure. Refer to the corresponding table for interpretations.
+
+1. For a given power, greater confidence requires:
+  1. less variable outcomes (i.e., lower SDs) for a given average difference; in each row, compare the left panel of each plot from left to right
+1. a greater average difference for outcomes that vary the same; in each row, compare the right panel of each plot from left to right
+1. Similarly, for a given confidence level, greater power requires:
+  1. less variable outcomes for a given average difference; in each column, compare the left panel of each plot from top to bottom
+1. a greater average difference for outcomes that vary the same; in each column, compare the right panel of each plot from top to bottom
+
+\newpage
+
+## Figures and Tables
+
+```{r echo=FALSE, out.width="100%", fig.cap="One Sample: One Statistical Test"}
+knitr::include_graphics(paste0(output_path, "figs_one_sample_ntests1.png"))
+tbl_sims_fancy_ntests1[tbl_sims_fancy_ntests1$Scenario %in% seq(1, 6),] %>% knitr::kable()
+```
+
+\newpage
+
+```{r echo=FALSE, out.width="100%", fig.cap="Two Samples: One Statistical Test"}
+knitr::include_graphics(paste0(output_path, "figs_two_sample_ntests1.png"))
+tbl_sims_fancy_ntests1[tbl_sims_fancy_ntests1$Scenario %in% seq(7, 12),] %>% knitr::kable()
+```
+
+\newpage
+
+```{r echo=FALSE, out.width="100%", fig.cap="Two Samples: 50 Statistical Tests"}
+knitr::include_graphics(paste0(output_path, "figs_two_sample_ntests50.png"))
+tbl_sims_fancy_ntests50[tbl_sims_fancy_ntests50$Scenario %in% seq(7, 12),] %>% knitr::kable()
+```

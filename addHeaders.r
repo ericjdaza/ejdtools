@@ -24,8 +24,8 @@ add_header_grep_correction <- function(text_string) {
 
 ## add first row
 add_header_first_row <- function(
-    data,
-    data_to_bind,
+    data, # must be the "table_body" object contained in a gtsummary::tbl_summary() output object; e.g., tbl_summary_output_object$table_body
+    data_to_bind, # must be the "table_body" object contained in a gtsummary::tbl_summary() output object; e.g., tbl_summary_output_object$table_body
     header2_label, # = "label_header_..."
     header2_pairs # = NA (if variable is numeric or MECE) or "pairs_...[[1]]" (must also include header2_label)
 ) {
@@ -78,8 +78,8 @@ add_header_first_row <- function(
 
 ## add middle row
 add_header_middle_row <- function(
-    data,
-    data_to_bind,
+    data, # must be the "table_body" object contained in a gtsummary::tbl_summary() output object; e.g., tbl_summary_output_object$table_body
+    data_to_bind, # must be the "table_body" object contained in a gtsummary::tbl_summary() output object; e.g., tbl_summary_output_object$table_body
     header1_label, # = "label_header_..."
     header1_pairs, # = NA (if variable is numeric or MECE) or "pairs_...[[1]]" (must also include header1_label)
     header2_label, # = "label_header_..."
@@ -160,8 +160,8 @@ add_header_middle_row <- function(
 
 ## add last row
 add_header_last_row <- function(
-    data,
-    data_to_bind,
+    data, # must be the "table_body" object contained in a gtsummary::tbl_summary() output object; e.g., tbl_summary_output_object$table_body
+    data_to_bind, # must be the "table_body" object contained in a gtsummary::tbl_summary() output object; e.g., tbl_summary_output_object$table_body
     header1_label, # = "label_header_..."
     header1_pairs # = NA (if variable is numeric or MECE) or "pairs_...[[1]]" (must also include header1_label)
 ) {
@@ -212,8 +212,8 @@ add_header_last_row <- function(
 
 ## main function
 add_header <- function(
-    data,
-    data_to_bind,
+    data, # must be the "table_body" object contained in a gtsummary::tbl_summary() output object; e.g., tbl_summary_output_object$table_body
+    data_to_bind, # must be the "table_body" object contained in a gtsummary::tbl_summary() output object; e.g., tbl_summary_output_object$table_body
     header1_label = NA, # = NA (i.e., first row) or "label_header_..."
     header1_pairs = NA, # = NA (if variable is numeric or MECE) or "pairs_...[[1]]"
     header2_label = NA, # = "label_header_..." or NA (i.e., last row)

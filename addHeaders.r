@@ -5,22 +5,11 @@
 ## clean up parentheses
 add_header_grep_correction <- function(text_string) {
     
-    if (grepl("\\(", text_string) == TRUE) text_string <- gsub(
-        "\\(",
-        "\\\\(",
+    for (reg_exp in c("(", ")", "?", ":")) if (grepl(paste0("\\", reg_exp), text_string) == TRUE) text_string <- gsub(
+        paste0("\\", reg_exp),
+        paste0("\\\\", reg_exp),
         text_string
     )
-    if (grepl("\\)", text_string) == TRUE) text_string <- gsub(
-        "\\)",
-        "\\\\)",
-        text_string
-    )
-    if (grepl("\\?", text_string) == TRUE) text_string <- gsub(
-        "\\?",
-        "\\\\?",
-        text_string
-    )
-    
     return(text_string)
     
 }

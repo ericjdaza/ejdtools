@@ -15,6 +15,11 @@ add_header_grep_correction <- function(text_string) {
         "\\\\)",
         text_string
     )
+    if (grepl("\\?", text_string) == TRUE) text_string <- gsub(
+        "\\?",
+        "\\\\?",
+        text_string
+    )
     
     return(text_string)
     

@@ -1,18 +1,5 @@
 # Functions to add headers to gtsummary output.
-
-
-
-## clean up parentheses
-add_header_grep_correction <- function(text_string) {
-    
-    for (reg_exp in c("(", ")", "?", ":")) if (grepl(paste0("\\", reg_exp), text_string) == TRUE) text_string <- gsub(
-        paste0("\\", reg_exp),
-        paste0("\\\\", reg_exp),
-        text_string
-    )
-    return(text_string)
-    
-}
+# Requires grepCorrection().
 
 
 
@@ -34,7 +21,7 @@ add_header_first_row <- function(
                         1 <= dplyr::row_number(),
                         dplyr::row_number() < min(
                             grep(
-                                add_header_grep_correction(header2_label),
+                                grepCorrection(header2_label),
                                 data_to_bind$variable
                             )
                         )
@@ -54,7 +41,7 @@ add_header_first_row <- function(
                         1 <= dplyr::row_number(),
                         dplyr::row_number() < min(
                             grep(
-                                add_header_grep_correction(header2_pairs),
+                                grepCorrection(header2_pairs),
                                 data_to_bind$variable
                             )
                         )
@@ -93,7 +80,7 @@ add_header_middle_row <- function(
                     dplyr::filter(
                         min(
                             grep(
-                                add_header_grep_correction(header1_label),
+                                grepCorrection(header1_label),
                                 data_to_bind$variable
                             )
                         ) <= dplyr::row_number(),
@@ -101,8 +88,8 @@ add_header_middle_row <- function(
                             grep(
                                 ifelse(
                                     is.na(header2_pairs),
-                                    add_header_grep_correction(header2_label),
-                                    add_header_grep_correction(header2_pairs)
+                                    grepCorrection(header2_label),
+                                    grepCorrection(header2_pairs)
                                 ),
                                 data_to_bind$variable
                             )
@@ -126,7 +113,7 @@ add_header_middle_row <- function(
                     dplyr::filter(
                         min(
                             grep(
-                                add_header_grep_correction(header1_pairs),
+                                grepCorrection(header1_pairs),
                                 data_to_bind$variable
                             )
                         ) <= dplyr::row_number(),
@@ -134,8 +121,8 @@ add_header_middle_row <- function(
                             grep(
                                 ifelse(
                                     is.na(header2_pairs),
-                                    add_header_grep_correction(header2_label),
-                                    add_header_grep_correction(header2_pairs)
+                                    grepCorrection(header2_label),
+                                    grepCorrection(header2_pairs)
                                 ),
                                 data_to_bind$variable
                             )
@@ -169,7 +156,7 @@ add_header_last_row <- function(
                     dplyr::filter(
                         min(
                             grep(
-                                add_header_grep_correction(header1_label),
+                                grepCorrection(header1_label),
                                 data_to_bind$variable
                             )
                         ) <= dplyr::row_number()
@@ -188,7 +175,7 @@ add_header_last_row <- function(
                     dplyr::filter(
                         min(
                             grep(
-                                add_header_grep_correction(header1_pairs),
+                                grepCorrection(header1_pairs),
                                 data_to_bind$variable
                             )
                         ) <= dplyr::row_number()

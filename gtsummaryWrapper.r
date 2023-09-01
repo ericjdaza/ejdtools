@@ -1,8 +1,15 @@
 # Wrapper function for gtsummary::tbl_summary() and common modifications.
 gtsummaryWrapper <- function(
     data,
-    group = NA, # appears as columns named "stat_..." in table_body object of tbl_summary() output
-    type_list = NULL, # to force tbl_summary() to apply variable types as specified
+    group = NULL, # appears as columns named "stat_..." in table_body object of tbl_summary() output
+    type_list = NULL, # to force tbl_summary() to apply variable types as specified; example:
+#     type_list = list(
+
+#         {label_header_1} ~ "categorical",
+#         {label_header_2} ~ "continuous2",
+#         ...
+
+#     ),
     statistic_all_continuous = "{median} ({p25}, {p75})", # tbl_summary() default
     statistic_all_categorical = "{n} ({p}%)", # tbl_summary() default
     digits_all_continuous = NULL, # use to specify digits in tbl_summary(); must be specified together with digits_all_categorical
@@ -13,16 +20,16 @@ gtsummaryWrapper <- function(
     location = "row", # add_stat_label() default; other allowed values: "column"
     label_all_continuous = NULL, # use to specify digits in add_stat_label(); must be specified together with label_all_categorical
     label_all_categorical = NULL, # use to specify digits in add_stat_label(); must be specified together with label_all_continuous
-    add_p_method = NA, # use to add p-values via add_p(); other allowed values: "default", "fisher_simulated"
-    add_ci_method = NA, # use to add confidence intervals via add_ci(); other allowed values: "default", "percent"
+    add_p_method = NULL, # use to add p-values via add_p(); other allowed values: "default", "fisher_simulated"
+    add_ci_method = NULL, # use to add confidence intervals via add_ci(); other allowed values: "default", "percent"
     relocate_c = NULL, # use to re-order column names of table_body object of tbl_summary() output
     bold_labels = TRUE, # set to TRUE to apply bold_labels()
-    align = NA, # modify_column_alignment() default if NA; other allowed values: "left", "right", "center"
+    align = NULL, # modify_column_alignment() default if NULL; other allowed values: "left", "right", "center"
     bold_levels = FALSE, # set to TRUE to apply bold_levels()
-    label_caption = NA # argument for modify_caption()
+    label_caption = NULL # argument for modify_caption()
 ) {
     
-    if (!is.na(group)) {
+    if (!is.null(group)) {
         
         if (!is.null(type_list)) {
 
@@ -120,7 +127,7 @@ gtsummaryWrapper <- function(
         
     }
     
-    if (is.na(group)) {
+    if (is.null(group)) {
         
         if (!is.null(type_list)) {
 
@@ -248,7 +255,7 @@ gtsummaryWrapper <- function(
     }
     
     # Add p-values.
-    if (!is.na(add_p_method)) {
+    if (!is.null(add_p_method)) {
         
         print("gtsummaryWrapper: Starting if block 11")
         if (add_p_method == "default") gtsummary_out <- gtsummary_out %>% gtsummary::add_p()
@@ -264,7 +271,7 @@ gtsummaryWrapper <- function(
     }
     
     # Add confidence intervals (CIs).
-    if (!is.na(add_ci_method)) {
+    if (!is.null(add_ci_method)) {
         
         print("gtsummaryWrapper: Starting if block 12")
         if (add_ci_method == "default") gtsummary_out <- gtsummary_out %>% gtsummary::add_ci()
@@ -292,7 +299,7 @@ gtsummaryWrapper <- function(
     }
     
     # Update column alignment; see gtsum_out$table_styling.
-    if (!is.na(align)) gtsummary_out <- gtsummary_out %>%
+    if (!is.null(align)) gtsummary_out <- gtsummary_out %>%
         gtsummary::modify_column_alignment(
 
             columns = tidyr::everything(),
@@ -305,7 +312,7 @@ gtsummaryWrapper <- function(
     if (bold_levels == TRUE) gtsummary_out <- gtsummary_out %>% gtsummary::bold_levels()
     
     # Add the caption.
-    if (!is.na(label_caption)) gtsummary_out <- gtsummary_out %>% gtsummary::modify_caption(label_caption)
+    if (!is.null(label_caption)) gtsummary_out <- gtsummary_out %>% gtsummary::modify_caption(label_caption)
     
     # Return final object.
     gtsummary_out

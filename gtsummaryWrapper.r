@@ -16,7 +16,9 @@ gtsummaryWrapper <- function(
     digits_all_categorical = NULL, # use to specify digits in tbl_summary(); must be specified together with digits_all_continuous
     missing = "ifany", # tbl_summary() default; other allowed values: "no", "always"
     missing_text = "Unknown", # tbl_summary() default; other examples: "Missing (n(%))"
-    add_overall_column = FALSE, # use to add column with overall summary statistics
+    modify_header_all_stat_cols = "**{level} (N={n})**", # argument for modify_header()
+    add_overall_col_label = NULL, # argument for add_overall(); use to add column with overall summary statistics;
+        # example: "**Overall (N={N})**"
     location = "row", # add_stat_label() default; other allowed values: "column"
     label_all_continuous = NULL, # use to specify digits in add_stat_label(); must be specified together with label_all_categorical
     label_all_categorical = NULL, # use to specify digits in add_stat_label(); must be specified together with label_all_continuous
@@ -222,12 +224,12 @@ gtsummaryWrapper <- function(
     }
     
     # Update column header; see gtsum_out$table_styling.
-    gtsummary_out <- gtsummary_out %>% gtsummary::modify_header(all_stat_cols() ~ "**{level} (N={n})**")
+    gtsummary_out <- gtsummary_out %>% gtsummary::modify_header(all_stat_cols() ~ modify_header_all_stat_cols)
     
     # Add column with overall summary statistics (https://www.danieldsjoberg.com/gtsummary/reference/add_overall.html)
     # Not needed if all original rows were bound to the original data with group variable value set to "Overall", and
     # then input into this function in the "data" argument.
-    if (add_overall_column == TRUE) gtsummary_out <- gtsummary_out %>% gtsummary::add_overall(col_label = "**Overall (N={N})**")
+    if (!is.null(add_overall_col_label)) gtsummary_out <- gtsummary_out %>% gtsummary::add_overall(col_label = add_overall_col_label)
 
     # Specify statistic labels.
     if (!is.null(label_all_continuous) & !is.null(label_all_categorical)) {

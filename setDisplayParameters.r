@@ -1,6 +1,7 @@
 # Function to set gtsummary display parameters.
 setDisplayParameters <- function(
-    percent = FALSE # = TRUE to append "%" to displayed values for continuous outcomes
+    add_n_obs = FALSE, # set to TRUE to append total number of observations
+    percent = FALSE # set to TRUE to append "%"
 ) {
     
     ifelse(
@@ -18,7 +19,8 @@ setDisplayParameters <- function(
                 "{median} ({p25}, {p75})",
                 "{min}, {max}",
                 "{N_miss} ({p_miss})"
-            )
+            )            
+            statistic_all_categorical <- c("{n} ({p})")
         },
         {
             # statistic_all_continuous <- c(
@@ -34,9 +36,18 @@ setDisplayParameters <- function(
                 "{min}%, {max}%",
                 "{N_miss} ({p_miss})"
             )
+            statistic_all_categorical <- c("{n} ({p}%)")
         }
     )
-    statistic_all_categorical <- c("{n} ({p})")
+    if (add_n_obs == TRUE) {
+        
+        statistic_all_continuous <- c(
+            "{N_obs}",
+            statistic_all_continuous
+        )
+        statistic_all_categorical <- c("{n} ({p}%) (N={N})")
+        
+    }
     # statistic_list <- list(
     #     all_continuous() ~ statistic_all_continuous,
     #     all_categorical() ~ statistic_all_categorical
@@ -56,13 +67,22 @@ setDisplayParameters <- function(
         c(0, 1)
     )
     digits_all_categorical <- c(0, 1)
+    if (add_n_obs == TRUE) {
+        
+        digits_all_continuous <- c(
+            0,
+            digits_all_continuous
+        )
+        digits_all_categorical <- c(0, 1, 0)
+        
+    }
     # digits_list <- list(
     #     all_continuous() ~ digits_all_continuous,
     #     all_categorical() ~ digits_all_categorical
     # )
 
     # label_all_continuous <- c(
-    #     "N (%)",
+    #     "n (%)",
     #     "Mean (SD)",
     #     "Median (IQR)",
     #     "Min, Max",
@@ -74,7 +94,16 @@ setDisplayParameters <- function(
         "Min, Max",
         "Missing (n (%))"
     )
-    label_all_categorical <- c("N (%)")
+    label_all_categorical <- c("n (%)")
+    if (add_n_obs == TRUE) {
+        
+        label_all_continuous <- c(
+            "n",
+            label_all_continuous
+        )
+        # label_all_categorical <- c("n (%) (N)")
+        
+    }
     # label_list <- list(
     #     all_continuous() ~ label_all_continuous,
     #     all_categorical() ~ label_all_categorical

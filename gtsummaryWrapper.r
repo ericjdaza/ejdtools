@@ -19,12 +19,18 @@ gtsummaryWrapper <- function(
     modify_header_all_stat_cols = "**{level} (N={n})**", # argument for modify_header()
     add_overall_col_label = NULL, # argument for add_overall(); use to add column with overall summary statistics;
         # example: "**Overall (N={N})**"
+        # NOTE: add_overall_col_label must be set to NULL if add_ci_method is not set to NULL; in such cases, add an overall column
+        # by creating an "overall" group; for example, by first binding all rows like so:
+        # dplyr::bind_rows(input_data %>% dplyr::mutate(group = "Overall"))
     location = "row", # add_stat_label() default; other allowed values: "column"
     label_all_continuous = NULL, # use to specify digits in add_stat_label(); must be specified together with label_all_categorical
     label_all_categorical = NULL, # use to specify digits in add_stat_label(); must be specified together with label_all_continuous
     add_p_method = NULL, # use to add p-values via add_p(); other allowed values: "default", "fisher_simulated"
     add_ci_method = NULL, # use to add confidence intervals via add_ci(); other allowed values: "default", "percent"
     relocate_c = NULL, # use to re-order column names of table_body object of tbl_summary() output
+        # NOTE: Take care when adding an "overall" group (i.e., across all groups). The stat_... numbering order will differ based
+        # on if you do this by setting add_overall_col_label (i.e., not to NULL) versus using dplyr::bind_rows(). See the note
+        # on add_overall_col_label.
     bold_labels = TRUE, # set to TRUE to apply bold_labels()
     align = NULL, # modify_column_alignment() default if NULL; other allowed values: "left", "right", "center"
     bold_levels = FALSE, # set to TRUE to apply bold_levels()

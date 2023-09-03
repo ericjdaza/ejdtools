@@ -34,7 +34,8 @@ gtsummaryWrapper <- function(
     bold_labels = TRUE, # set to TRUE to apply bold_labels()
     align = NULL, # modify_column_alignment() default if NULL; other allowed values: "left", "right", "center"
     bold_levels = FALSE, # set to TRUE to apply bold_levels()
-    label_caption = NULL # argument for modify_caption()
+    label_caption = NULL, # argument for modify_caption()
+    debugging = FALSE # set to TRUE to show debugging print() output
 ) {
     
     if (!is.null(group)) {
@@ -43,7 +44,7 @@ gtsummaryWrapper <- function(
 
             if (!is.null(digits_all_continuous) & !is.null(digits_all_categorical)) {
                 
-                print("gtsummaryWrapper: Starting if block 1")
+                if (debugging == TRUE) print("gtsummaryWrapper: Starting if block 1")
                 gtsummary_out <- data %>%
                     gtsummary::tbl_summary(
 
@@ -61,12 +62,12 @@ gtsummaryWrapper <- function(
                         missing_text = missing_text
 
                     )
-                print("gtsummaryWrapper: Ending if block 1")
+                if (debugging == TRUE) print("gtsummaryWrapper: Ending if block 1")
                 
             }
             if (is.null(digits_all_continuous) & is.null(digits_all_categorical)) {
                 
-                print("gtsummaryWrapper: Starting if block 2")
+                if (debugging == TRUE) print("gtsummaryWrapper: Starting if block 2")
                 gtsummary_out <- data %>%
                     gtsummary::tbl_summary(
 
@@ -80,7 +81,7 @@ gtsummaryWrapper <- function(
                         missing_text = missing_text
 
                     )
-                print("gtsummaryWrapper: Ending if block 2")
+                if (debugging == TRUE) print("gtsummaryWrapper: Ending if block 2")
                 
             }
             
@@ -90,7 +91,7 @@ gtsummaryWrapper <- function(
 
             if (!is.null(digits_all_continuous) & !is.null(digits_all_categorical)) {
                 
-                print("gtsummaryWrapper: Starting if block 3")
+                if (debugging == TRUE) print("gtsummaryWrapper: Starting if block 3")
                 gtsummary_out <- data %>%
                     gtsummary::tbl_summary(
 
@@ -108,12 +109,12 @@ gtsummaryWrapper <- function(
                         missing_text = missing_text
 
                     )
-                print("gtsummaryWrapper: Ending if block 3")
+                if (debugging == TRUE) print("gtsummaryWrapper: Ending if block 3")
                 
             }
             if (is.null(digits_all_continuous) & is.null(digits_all_categorical)) {
                 
-                print("gtsummaryWrapper: Starting if block 4")
+                if (debugging == TRUE) print("gtsummaryWrapper: Starting if block 4")
                 gtsummary_out <- data %>%
                     gtsummary::tbl_summary(
 
@@ -127,7 +128,7 @@ gtsummaryWrapper <- function(
                         missing_text = missing_text
 
                     )
-                print("gtsummaryWrapper: Ending if block 4")
+                if (debugging == TRUE) print("gtsummaryWrapper: Ending if block 4")
                 
             }
             
@@ -141,7 +142,7 @@ gtsummaryWrapper <- function(
 
             if (!is.null(digits_all_continuous) & !is.null(digits_all_categorical)) {
                 
-                print("gtsummaryWrapper: Starting if block 5")
+                if (debugging == TRUE) print("gtsummaryWrapper: Starting if block 5")
                 gtsummary_out <- data %>%
                     gtsummary::tbl_summary(
 
@@ -158,12 +159,12 @@ gtsummaryWrapper <- function(
                         missing_text = missing_text
 
                     )
-                print("gtsummaryWrapper: Ending if block 5")
+                if (debugging == TRUE) print("gtsummaryWrapper: Ending if block 5")
                 
             }
             if (is.null(digits_all_continuous) & is.null(digits_all_categorical)) {
                 
-                print("gtsummaryWrapper: Starting if block 6")
+                if (debugging == TRUE) print("gtsummaryWrapper: Starting if block 6")
                 gtsummary_out <- data %>%
                     gtsummary::tbl_summary(
 
@@ -176,7 +177,7 @@ gtsummaryWrapper <- function(
                         missing_text = missing_text
 
                     )
-                print("gtsummaryWrapper: Ending if block 6")
+                if (debugging == TRUE) print("gtsummaryWrapper: Ending if block 6")
                 
             }
             
@@ -186,7 +187,7 @@ gtsummaryWrapper <- function(
 
             if (!is.null(digits_all_continuous) & !is.null(digits_all_categorical)) {
                 
-                print("gtsummaryWrapper: Starting if block 7")
+                if (debugging == TRUE) print("gtsummaryWrapper: Starting if block 7")
                 gtsummary_out <- data %>%
                     gtsummary::tbl_summary(
 
@@ -203,12 +204,12 @@ gtsummaryWrapper <- function(
                         missing_text = missing_text
 
                     )
-                print("gtsummaryWrapper: Ending if block 7")
+                if (debugging == TRUE) print("gtsummaryWrapper: Ending if block 7")
                 
             }
             if (is.null(digits_all_continuous) & is.null(digits_all_categorical)) {
                 
-                print("gtsummaryWrapper: Starting if block 8")
+                if (debugging == TRUE) print("gtsummaryWrapper: Starting if block 8")
                 gtsummary_out <- data %>%
                     gtsummary::tbl_summary(
 
@@ -221,7 +222,7 @@ gtsummaryWrapper <- function(
                         missing_text = missing_text
 
                     )
-                print("gtsummaryWrapper: Ending if block 8")
+                if (debugging == TRUE) print("gtsummaryWrapper: Ending if block 8")
                 
             }
             
@@ -240,7 +241,7 @@ gtsummaryWrapper <- function(
     # Specify statistic labels.
     if (!is.null(label_all_continuous) & !is.null(label_all_categorical)) {
         
-        print("gtsummaryWrapper: Starting if block 9")
+        if (debugging == TRUE) print("gtsummaryWrapper: Starting if block 9")
         gtsummary_out <- gtsummary_out %>%
             gtsummary::add_stat_label(
 
@@ -251,21 +252,21 @@ gtsummaryWrapper <- function(
                 )
 
             )
-        print("gtsummaryWrapper: Ending if block 9")
+        if (debugging == TRUE) print("gtsummaryWrapper: Ending if block 9")
         
     }
     if (is.null(label_all_continuous) & is.null(label_all_categorical)) {
         
-        print("gtsummaryWrapper: Starting if block 10")
+        if (debugging == TRUE) print("gtsummaryWrapper: Starting if block 10")
         gtsummary_out <- gtsummary_out %>% gtsummary::add_stat_label(location = location)
-        print("gtsummaryWrapper: Ending if block 10")
+        if (debugging == TRUE) print("gtsummaryWrapper: Ending if block 10")
         
     }
     
     # Add p-values.
     if (!is.null(add_p_method)) {
         
-        print("gtsummaryWrapper: Starting if block 11")
+        if (debugging == TRUE) print("gtsummaryWrapper: Starting if block 11")
         if (add_p_method == "default") gtsummary_out <- gtsummary_out %>% gtsummary::add_p()
         if (add_p_method == "fisher_simulated") gtsummary_out <- gtsummary_out %>% gtsummary::add_p()
             gtsummary::add_p( # source: https://stackoverflow.com/questions/61360954/error-in-add-p-for-variable-x-and-test-fisher-test-p-value-omitted
@@ -274,27 +275,27 @@ gtsummaryWrapper <- function(
                     B = 100000
                 )
             )
-        print("gtsummaryWrapper: Ending if block 11")
+        if (debugging == TRUE) print("gtsummaryWrapper: Ending if block 11")
         
     }
     
     # Add confidence intervals (CIs).
     if (!is.null(add_ci_method)) {
         
-        print("gtsummaryWrapper: Starting if block 12")
+        if (debugging == TRUE) print("gtsummaryWrapper: Starting if block 12")
         if (add_ci_method == "default") gtsummary_out <- gtsummary_out %>% gtsummary::add_ci()
         if (add_ci_method == "percent") gtsummary_out <- gtsummary_out %>% gtsummary::add_ci(
                 statistic = list(all_continuous() ~ "{conf.low}%, {conf.high}%")
                 # , pattern = "{stat} ({ci})"
             )
-        print("gtsummaryWrapper: Ending if block 12")
+        if (debugging == TRUE) print("gtsummaryWrapper: Ending if block 12")
         
     }
     
     # Re-order columns; see gtsum_out$table_body.
     if (!is.null(relocate_c)) {
         
-        print("gtsummaryWrapper: Starting if block 13")
+        if (debugging == TRUE) print("gtsummaryWrapper: Starting if block 13")
         gtsummary_out <- gtsummary_out %>%
             gtsummary::modify_table_body(
 
@@ -302,7 +303,7 @@ gtsummaryWrapper <- function(
                 dplyr::relocate({relocate_c})
 
             )
-        print("gtsummaryWrapper: Ending if block 13")
+        if (debugging == TRUE) print("gtsummaryWrapper: Ending if block 13")
         
     }
     

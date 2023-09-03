@@ -13,7 +13,8 @@ gtsummaryAttachCIs <- function(
     ci_prefix = "(95% CI: ", # prefix for display; e.g., "(CI: ", "("; overridden with "(" if attachment_method = "bind_rows"
     attachment_method = "bind_rows", # = "paste0" to concatenate to label_mean_or_frequency; "bind_rows" to add as row below label_mean_or_frequency
     paste_collapse = "\n", # collapse argument for paste0 if attachment_method = "paste0"
-    ci_label = "95% CI" # confidence interval label if attachment_method = "bind_rows"
+    ci_label = "95% CI", # confidence interval label if attachment_method = "bind_rows"
+    debugging = FALSE # set to TRUE to show debugging print() output
 ) {
     
     stat_numbers <- names(data$table_body)[
@@ -22,8 +23,8 @@ gtsummaryAttachCIs <- function(
     ] %>%
         stringr::str_replace("stat_", "") %>%
         as.numeric()
-    print("gtsummaryAttachCIs: stat_numbers =")
-    print(stat_numbers)
+    if (debugging == TRUE) print("gtsummaryAttachCIs: stat_numbers =")
+    if (debugging == TRUE) print(stat_numbers)
     
     data_stats <- data$table_body %>%
         dplyr::select(-paste0("ci_stat_", stat_numbers))
@@ -72,11 +73,11 @@ gtsummaryAttachCIs <- function(
     
     if (attachment_method == "paste0") {
         
-        print("gtsummaryAttachCIs: Starting if block 1")
+        if (debugging == TRUE) print("gtsummaryAttachCIs: Starting if block 1")
         
         if (length(grep("continuous", unique(data$table_body$var_type))) > 0) {
             
-            print("gtsummaryAttachCIs: Starting if block 1.1")
+            if (debugging == TRUE) print("gtsummaryAttachCIs: Starting if block 1.1")
             data_with_ci_stats <- data_stats %>%
                 dplyr::full_join(
                     y = data_ci_stats,
@@ -87,24 +88,24 @@ gtsummaryAttachCIs <- function(
                     )
                 )
             data_with_ci_stats_label_or_stat_label <- data_with_ci_stats$label
-            print("gtsummaryAttachCIs: Ending if block 1.1")
+            if (debugging == TRUE) print("gtsummaryAttachCIs: Ending if block 1.1")
             
         }
         if (unique(data$table_body$var_type) == "dichotomous") {
             
-            print("gtsummaryAttachCIs: Starting if block 1.2")
+            if (debugging == TRUE) print("gtsummaryAttachCIs: Starting if block 1.2")
             data_with_ci_stats <- data$table_body %>%
                 dplyr::mutate_at(
                     vars(dplyr::starts_with("ci_stat_")),
                     function(x) paste0(ci_prefix, x, ")")
                 )
             data_with_ci_stats_label_or_stat_label <- data_with_ci_stats$stat_label
-            print("gtsummaryAttachCIs: Ending if block 1.2")
+            if (debugging == TRUE) print("gtsummaryAttachCIs: Ending if block 1.2")
             
         }
         for (stat_number in 1:max(stat_numbers)) {
             
-            print(paste0("gtsummaryAttachCIs: If block 1: stat_number = ", stat_number))
+            if (debugging == TRUE) print(paste0("gtsummaryAttachCIs: If block 1: stat_number = ", stat_number))
             data_with_ci_stats[
                 data_with_ci_stats$variable %in% variables_needing_cis &
                 !is.na(data_with_ci_stats_label_or_stat_label) &
@@ -128,7 +129,7 @@ gtsummaryAttachCIs <- function(
         data_with_ci_stats <- data_with_ci_stats %>%
             dplyr::select(-paste0("ci_stat_", stat_numbers))
         
-        print("gtsummaryAttachCIs: Ending if block 1")
+        if (debugging == TRUE) print("gtsummaryAttachCIs: Ending if block 1")
         
     }
     
@@ -141,7 +142,7 @@ gtsummaryAttachCIs <- function(
 
             if (data_variable == data_variables[1]) {
                 
-                print(paste0("gtsummaryAttachCIs: Starting if block 2: data_variable = ", data_variable))
+                if (debugging == TRUE) print(paste0("gtsummaryAttachCIs: Starting if block 2: data_variable = ", data_variable))
                 if (!(data_variable %in% variables_needing_cis)) data_with_ci_stats <- data_stats %>%
                     dplyr::filter(variable == data_variable)
                 if (data_variable %in% variables_needing_cis) data_with_ci_stats <- data_stats %>%
@@ -158,12 +159,12 @@ gtsummaryAttachCIs <- function(
                             dplyr::filter(variable == data_variable) %>%
                             dplyr::filter(min(grep(grepCorrection(label_mean_or_frequency), data_stats_label_or_stats_label)) < dplyr::row_number())
                     )
-                print(paste0("gtsummaryAttachCIs: Ending if block 2: data_variable = ", data_variable))
+                if (debugging == TRUE) print(paste0("gtsummaryAttachCIs: Ending if block 2: data_variable = ", data_variable))
 
             }
             if (data_variable != data_variables[1]) {
 
-                print(paste0("gtsummaryAttachCIs: Starting if block 3: data_variable = ", data_variable))
+                if (debugging == TRUE) print(paste0("gtsummaryAttachCIs: Starting if block 3: data_variable = ", data_variable))
                 if (!(data_variable %in% variables_needing_cis)) data_with_ci_stats <- data_with_ci_stats %>%
                     dplyr::bind_rows(data_stats %>% dplyr::filter(variable == data_variable))
                 if (data_variable %in% variables_needing_cis) data_with_ci_stats <- data_with_ci_stats %>%
@@ -183,7 +184,7 @@ gtsummaryAttachCIs <- function(
                                     dplyr::filter(min(grep(grepCorrection(label_mean_or_frequency), data_stats_label_or_stats_label)) < dplyr::row_number())
                             )
                     )
-                print(paste0("gtsummaryAttachCIs: Ending if block 3: data_variable = ", data_variable))
+                if (debugging == TRUE) print(paste0("gtsummaryAttachCIs: Ending if block 3: data_variable = ", data_variable))
 
             }
 

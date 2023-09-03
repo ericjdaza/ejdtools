@@ -98,7 +98,7 @@ setDisplayParameters <- function(
     if (add_n_obs == TRUE) {
         
         label_all_continuous <- c(
-            "n",
+            "N",
             label_all_continuous
         )
         # label_all_categorical <- c("n (%) (N)")

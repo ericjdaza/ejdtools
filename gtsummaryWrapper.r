@@ -2,6 +2,11 @@
 gtsummaryWrapper <- function(
     data,
     group = NULL, # appears as columns named "stat_..." in table_body object of tbl_summary() output
+    tbl_summary_label = NULL, # tbl_summary(label) default; other examples: "Missing (n(%))"
+    statistic_all_continuous = "{median} ({p25}, {p75})", # tbl_summary() default
+    statistic_all_categorical = "{n} ({p}%)", # tbl_summary() default
+    digits_all_continuous = NULL, # use to specify digits in tbl_summary(); must be specified together with digits_all_categorical
+    digits_all_categorical = NULL, # use to specify digits in tbl_summary(); must be specified together with digits_all_continuous
     type_list = NULL, # to force tbl_summary() to apply variable types as specified; example:
 #     type_list = list(
 
@@ -10,14 +15,11 @@ gtsummaryWrapper <- function(
 #         ...
 
 #     ),
-    statistic_all_continuous = "{median} ({p25}, {p75})", # tbl_summary() default
-    statistic_all_categorical = "{n} ({p}%)", # tbl_summary() default
-    digits_all_continuous = NULL, # use to specify digits in tbl_summary(); must be specified together with digits_all_categorical
-    digits_all_categorical = NULL, # use to specify digits in tbl_summary(); must be specified together with digits_all_continuous
     missing = "ifany", # tbl_summary() default; other allowed values: "no", "always"
     missing_text = "Unknown", # tbl_summary() default; other examples: "Missing (n(%))"
-    modify_header_all_stat_cols = "**{level} (N={n})**", # argument for modify_header()
-    add_overall_col_label = NULL, # argument for add_overall(); use to add column with overall summary statistics;
+    modify_header_label = "Characteristic", # modify_header(label) default
+    modify_header_all_stat_cols = "**{level} (N={n})**", # modify_header(all_stat_cols()) argument; default = "**{level}**"
+    add_overall_col_label = NULL, # add_overall() argument; use to add column with overall summary statistics;
         # example: "**Overall (N={N})**"
         # NOTE: add_overall_col_label must be set to NULL if add_ci_method is not set to NULL; in such cases, add an overall column
         # by creating an "overall" group; for example, by first binding all rows like so:
@@ -34,7 +36,7 @@ gtsummaryWrapper <- function(
     bold_labels = TRUE, # set to TRUE to apply bold_labels()
     align = NULL, # modify_column_alignment() default if NULL; other allowed values: "left", "right", "center"
     bold_levels = FALSE, # set to TRUE to apply bold_levels()
-    label_caption = NULL, # argument for modify_caption()
+    label_caption = NULL, # modify_caption() argument
     debugging = FALSE # set to TRUE to show debugging print() output
 ) {
     
@@ -49,6 +51,7 @@ gtsummaryWrapper <- function(
                     gtsummary::tbl_summary(
 
                         by = {group},
+                        label = tbl_summary_label,
                         type = type_list,
                         statistic = list(
                             all_continuous() ~ statistic_all_continuous,
@@ -72,6 +75,7 @@ gtsummaryWrapper <- function(
                     gtsummary::tbl_summary(
 
                         by = {group},
+                        label = tbl_summary_label,
                         type = type_list,
                         statistic = list(
                             all_continuous() ~ statistic_all_continuous,
@@ -96,6 +100,7 @@ gtsummaryWrapper <- function(
                     gtsummary::tbl_summary(
 
                         by = {group},
+                        label = tbl_summary_label,
                         type = all_continuous() ~ "continuous2",
                         statistic = list(
                             all_continuous() ~ statistic_all_continuous,
@@ -119,6 +124,7 @@ gtsummaryWrapper <- function(
                     gtsummary::tbl_summary(
 
                         by = {group},
+                        label = tbl_summary_label,
                         type = all_continuous() ~ "continuous2",
                         statistic = list(
                             all_continuous() ~ statistic_all_continuous,
@@ -146,6 +152,7 @@ gtsummaryWrapper <- function(
                 gtsummary_out <- data %>%
                     gtsummary::tbl_summary(
 
+                        label = tbl_summary_label,
                         type = type_list,
                         statistic = list(
                             all_continuous() ~ statistic_all_continuous,
@@ -168,6 +175,7 @@ gtsummaryWrapper <- function(
                 gtsummary_out <- data %>%
                     gtsummary::tbl_summary(
 
+                        label = tbl_summary_label,
                         type = type_list,
                         statistic = list(
                             all_continuous() ~ statistic_all_continuous,
@@ -191,6 +199,7 @@ gtsummaryWrapper <- function(
                 gtsummary_out <- data %>%
                     gtsummary::tbl_summary(
 
+                        label = tbl_summary_label,
                         type = all_continuous() ~ "continuous2",
                         statistic = list(
                             all_continuous() ~ statistic_all_continuous,
@@ -213,6 +222,7 @@ gtsummaryWrapper <- function(
                 gtsummary_out <- data %>%
                     gtsummary::tbl_summary(
 
+                        label = tbl_summary_label,
                         type = all_continuous() ~ "continuous2",
                         statistic = list(
                             all_continuous() ~ statistic_all_continuous,
@@ -231,7 +241,12 @@ gtsummaryWrapper <- function(
     }
     
     # Update column header; see gtsum_out$table_styling.
-    gtsummary_out <- gtsummary_out %>% gtsummary::modify_header(all_stat_cols() ~ modify_header_all_stat_cols)
+    gtsummary_out <- gtsummary_out %>% gtsummary::modify_header(
+        
+        label = modify_header_label,
+        all_stat_cols() ~ modify_header_all_stat_cols
+    
+    )
     
     # Add column with overall summary statistics (https://www.danieldsjoberg.com/gtsummary/reference/add_overall.html)
     # Not needed if all original rows were bound to the original data with group variable value set to "Overall", and

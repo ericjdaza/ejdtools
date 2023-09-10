@@ -29,6 +29,7 @@ gtsummaryWrapper <- function(
     label_all_categorical = NULL, # use to specify digits in add_stat_label(); must be specified together with label_all_continuous
     add_p_method = NULL, # use to add p-values via add_p(); other allowed values: "default", "fisher_simulated"
     add_ci_method = NULL, # use to add confidence intervals via add_ci(); other allowed values: "default", "percent"
+    add_ci_conf_level = 0.95, # add_ci(conf.level) default
     relocate_c = NULL, # use to re-order column names of table_body object of tbl_summary() output
         # NOTE: Take care when adding an "overall" group (i.e., across all groups). The stat_... numbering order will differ based
         # on if you do this by setting add_overall_col_label (i.e., not to NULL) versus using dplyr::bind_rows(). See the note
@@ -298,8 +299,9 @@ gtsummaryWrapper <- function(
     if (!is.null(add_ci_method)) {
         
         if (debugging == TRUE) print("gtsummaryWrapper: Starting if block 12")
-        if (add_ci_method == "default") gtsummary_out <- gtsummary_out %>% gtsummary::add_ci()
+        if (add_ci_method == "default") gtsummary_out <- gtsummary_out %>% gtsummary::add_ci(conf.level = add_ci_conf_level)
         if (add_ci_method == "percent") gtsummary_out <- gtsummary_out %>% gtsummary::add_ci(
+                conf.level = add_ci_conf_level,
                 statistic = list(all_continuous() ~ "{conf.low}%, {conf.high}%")
                 # , pattern = "{stat} ({ci})"
             )

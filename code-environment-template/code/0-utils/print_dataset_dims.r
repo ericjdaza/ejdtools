@@ -8,7 +8,7 @@ print_dataset_dims <- function(
 
     rows <- data %>% nrow()
     cols <- data %>% ncol()
-    drows <- data %>% distinct %>% nrow()
+    drows <- data %>% dplyr::distinct() %>% nrow()
     didrows <- NA
     if (!is.na(idvar)) didrows <- data %>% dplyr::select({idvar}) %>% dplyr::distinct() %>% nrow()
     
@@ -18,7 +18,7 @@ print_dataset_dims <- function(
         "\nTotal distinct {idvar} values: {didrows}"
     )
     
-    glue(
+    glue::glue(
         glue_string,
         rows = rows,
         cols = cols,

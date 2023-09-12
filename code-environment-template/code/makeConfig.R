@@ -26,15 +26,22 @@ config <- jsonlite::write_json( # https://rdrr.io/github/skgrange/threadr/man/wr
   
   list(
     
-    path_code =   path_code,
-    path_data =   path_data,
+    path_code = path_code,
+    path_data = path_data,
     
-    input =       paste0(path_data, "input/"),
-
-    output =      paste0(path_data, "output/"),
-    output_pd =   paste0(path_data, "output/0-processed-data/"),
-    output_ad =   paste0(path_data, "output/1-analysis-data/"),
-    output_ao =   paste0(path_data, "output/2-analysis-output/")
+    input = paste0(path_data, "input/"),
+    
+    output = paste0(path_data, "output/"),
+    got = paste0(path_data, "output/1-got/"),
+    processed = paste0(path_data, "output/2-processed/"),
+    analyzed = paste0(path_data, "output/3-analyzed/")
+    
+    # # example outputs:
+    # got_file1 = "file1.csv",
+    # got_file2 = "file2.feather",
+    # processed_file1 = "file1.feather",
+    # analyzed_file1 = "file1.rtf",
+    # analyzed_file2 = "file2.png"
     
   ),
   paste0(path_data, "output/config.json")

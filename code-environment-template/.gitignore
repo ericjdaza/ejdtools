@@ -49,4 +49,6 @@ po/*~
 rsconnect/
 
 # data folders
-data/*
+data/input/*
+data/output/1-got/*
+data/output/2-processed/*

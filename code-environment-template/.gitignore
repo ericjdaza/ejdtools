@@ -4,6 +4,7 @@
 
 # Session Data files
 .RData
+.RDataTmp
 
 # User-specific files
 .Ruserdata
@@ -38,15 +39,14 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-# Data and storage
-.zip
-/data/
-/data/*
+# pkgdown site
+docs/
 
-# Data files to exclude
-*.feather
-*.csv
-*.RData
+# translation temp files
+po/*~
 
-# Other files
-*/*.DS_Store
+# RStudio Connect folder
+rsconnect/
+
+# data folders
+data/*

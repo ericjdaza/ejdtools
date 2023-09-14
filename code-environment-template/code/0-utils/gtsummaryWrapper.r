@@ -17,7 +17,7 @@ gtsummaryWrapper <- function(
 #     ),
     missing = "ifany", # tbl_summary() default; other allowed values: "no", "always"
     missing_text = "Unknown", # tbl_summary() default; other examples: "Missing (n(%))"
-    modify_header_label = "Characteristic", # modify_header(label) default
+    modify_header_label = "**Characteristic**", # modify_header(label) default
     modify_header_all_stat_cols = "**{level} (N={n})**", # modify_header(all_stat_cols()) argument; default = "**{level}**"
     add_overall_col_label = NULL, # add_overall() argument; use to add column with overall summary statistics;
         # example: "**Overall (N={N})**"

@@ -9,14 +9,14 @@ setDisplayParameters <- function(
     statistic_all_continuous <- c(
         "{mean} ({sd})",
         "{median} ({p25}, {p75})",
-        "{min}, {max}",
-        "{N_miss} ({p_miss})"
+        "{min}, {max}"
+        # "{N_miss} ({p_miss})"
     )            
     if (percent == TRUE) statistic_all_continuous <- c(
         "{mean}% ({sd}%)",
         "{median}% ({p25}%, {p75}%)",
-        "{min}%, {max}%",
-        "{N_miss} ({p_miss})"
+        "{min}%, {max}%"
+        # "{N_miss} ({p_miss})"
     )
     statistic_all_categorical <- c("{n} ({p})")
     if (percent_categorical == TRUE) statistic_all_categorical <- c("{n} ({p}%)")
@@ -30,28 +30,33 @@ setDisplayParameters <- function(
         
     }
     
-    digits_all_continuous <- c(
-        c(1, 2),
-        c(1, 0, 0),
-        c(0, 0),
-        c(0, 1)
-    )
-    digits_all_categorical <- c(0, 1)
-    if (add_n_obs == TRUE) {
+#     digits_all_continuous <- c(
+#         c(1, 2),
+#         c(1, 0, 0),
+#         c(0, 0)
+#         # c(0, 1)
+#     )
+#     digits_all_categorical <- c(0, 1)
+#     if (add_n_obs == TRUE) {
         
-        digits_all_continuous <- c(
-            0,
-            digits_all_continuous
-        )
-        digits_all_categorical <- c(0, 1, 0)
+#         digits_all_continuous <- c(
+#             0,
+#             digits_all_continuous
+#         )
+#         digits_all_categorical <- c(0, 1, 0)
         
-    }
+#     }
+    
+    # Have gtsummary automatically determine digits by setting
+    # these to NULL.
+    digits_all_continuous <- NULL
+    digits_all_categorical <- NULL
     
     label_all_continuous <- c(
         "Mean (SD)",
         "Median (IQR)",
-        "Min, Max",
-        "Missing (n (%))"
+        "Min, Max"
+        # "Missing (n (%))"
     )
     label_all_categorical <- c("n (%)")
     if (add_n_obs == TRUE) {

@@ -372,6 +372,9 @@ completeAllDaysAndWeeks <- function(
     study_start_datevar, # must be in dataset; study day 1 is set as as.Date(study_start_datevar)
     datevar, # must be in dataset
     total_study_days = 90,
+    first_last_7_days = FALSE, # TRUE for SAP Section 7.3.5.1 Secondary Endpoint 5.1 (SE5.1)
+    first_last_14_days = TRUE, # TRUE for SAP Section 7.3.3 Secondary Objective 3 (SO3)
+    first_last_30_days = FALSE, # TRUE for SAP Section 7.3.5.1 Secondary Endpoint 5.1 (SE5.1)
     debugging = FALSE
 ) {
     
@@ -467,8 +470,13 @@ completeAllDaysAndWeeks <- function(
             in_study_period_raw = (
                 0 < participant_study_day &
                 participant_study_day <= total_study_days
-            ),
-
+            )
+                        
+        ) %>%
+        dplyr::select(-makeAllDaysAndWeeks_study_start_datevar_as_Date)
+    if (first_last_7_days == TRUE) data3 <- data3 %>%
+        dplyr::mutate(
+            
             first_7_days = (
                 0 < participant_study_day &
                 participant_study_day <= 7
@@ -477,7 +485,18 @@ completeAllDaysAndWeeks <- function(
                 total_study_days - 7 < participant_study_day &
                 participant_study_day <= total_study_days
             ),
-
+            
+            first_last_week_label_raw = dplyr::case_when(
+                first_7_days == FALSE & last_7_days == FALSE ~ "neither",
+                first_7_days == TRUE & last_7_days == FALSE ~ "first",
+                first_7_days == FALSE & last_7_days == TRUE ~ "last",
+                first_7_days == TRUE & last_7_days == TRUE ~ "both"
+            )
+            
+        )
+    if (first_last_14_days == TRUE) data3 <- data3 %>%
+        dplyr::mutate(
+            
             first_14_days = (
                 0 < participant_study_day &
                 participant_study_day <= 14
@@ -487,22 +506,34 @@ completeAllDaysAndWeeks <- function(
                 participant_study_day <= total_study_days
             ),
             
-            first_last_week_label_raw = dplyr::case_when(
-                first_7_days == FALSE & last_7_days == FALSE ~ "neither",
-                first_7_days == TRUE & last_7_days == FALSE ~ "first",
-                first_7_days == FALSE & last_7_days == TRUE ~ "last",
-                first_7_days == TRUE & last_7_days == TRUE ~ "both"
-            ),
-
             fortnight_label_raw = dplyr::case_when(
                 first_14_days == FALSE & last_14_days == FALSE ~ "neither",
                 first_14_days == TRUE & last_14_days == FALSE ~ "first",
                 first_14_days == FALSE & last_14_days == TRUE ~ "last",
                 first_14_days == TRUE & last_14_days == TRUE ~ "both"
             )
-
-        ) %>%
-        dplyr::select(-makeAllDaysAndWeeks_study_start_datevar_as_Date)
+            
+        )
+    if (first_last_30_days == TRUE) data3 <- data3 %>%
+        dplyr::mutate(
+            
+            first_30_days = (
+                0 < participant_study_day &
+                participant_study_day <= 30
+            ),
+            last_30_days = (
+                total_study_days - 30 < participant_study_day &
+                participant_study_day <= total_study_days
+            ),
+            
+            first_last_30_days_label_raw = dplyr::case_when(
+                first_30_days == FALSE & last_30_days == FALSE ~ "neither",
+                first_30_days == TRUE & last_30_days == FALSE ~ "first",
+                first_30_days == FALSE & last_30_days == TRUE ~ "last",
+                first_30_days == TRUE & last_30_days == TRUE ~ "both"
+            )
+            
+        )
     if (debugging == TRUE) print("completeAllDaysAndWeeks: Ending data3 <- data2")
     
     names(data3)[names(data3) == "makeAllDaysAndWeeks_identifier"] <- identifier
@@ -1164,4 +1195,21 @@ filterValuesPartnerData <- function(
     
     data
     
+}
+
+
+
+# BMI formula
+calculateBMI <- function(
+    data,
+    weight_var,
+    height_var,
+    units = "lbs_inches", # possible values: "lbs_inches", "kg_cm"
+    bmi_varname = "bmi"
+) {
+    
+    if (units == "lbs_inches") data$calculateBMI_bmi <- data[[weight_var]] / (data[[height_var]]^2) * 703
+    if (units == "kg_cm") data$calculateBMI_bmi <- data[[weight_var]] / (data[[height_var]]^2)
+    if (!is.null(bmi_varname)) names(data)[names(data) == "calculateBMI_bmi"] <- bmi_varname
+    data
 }

@@ -698,8 +698,8 @@ OTRSumOutcomes <- function(
 
             )
         ) %>%
-        dplyr::mutate(sources = paste(sources.x, ", ", sources.y) %>% removeNAFromString()) %>%
         dplyr::rowwise() %>%
+        dplyr::mutate(sources = paste0(dplyr::pick(dplyr::starts_with("sources.")), collapse = ", ") %>% removeNAFromString()) %>%
         dplyr::mutate_at(
             vars(dplyr::matches("summed_outcome.")),
             function(x) ifelse(is.na(x), 0, x)
@@ -1384,6 +1384,72 @@ mergeForEE11 <- function(
         otr_per_week = otr_per_week,
         otr = otr,
         cfn_otr = cfn_otr
+    )
+    
+}
+
+
+
+# Check outliers. Identify dataset rows and plot results.
+checkOutliers <- function(
+    data,
+    variable1 = "mean_outcome",
+    variable2 = "median_outcome",
+    variable1_text = "Mean",
+    variable2_text = "Median",
+    title_text,
+    subtitle_text,
+    outlier_percentile = 0.95
+) {
+    
+    names(data)[names(data) == variable1] <- "checkOutliers_variable1"
+    names(data)[names(data) == variable2] <- "checkOutliers_variable2"
+    
+    ggplot_data <- data %>%
+        dplyr::mutate(
+            
+            outlier = dplyr::case_when(
+                quantile(data$checkOutliers_variable1, outlier_percentile) <= checkOutliers_variable1 &
+                    checkOutliers_variable2 < quantile(data$checkOutliers_variable2, outlier_percentile) ~
+                    paste0(variable1_text, " axis"),
+                checkOutliers_variable1 < quantile(data$checkOutliers_variable1, outlier_percentile) &
+                    quantile(data$checkOutliers_variable2, outlier_percentile) <= checkOutliers_variable2 ~
+                    paste0(variable2_text, " axis"),
+                quantile(data$checkOutliers_variable1, outlier_percentile) <= checkOutliers_variable1 &
+                    quantile(data$checkOutliers_variable2, outlier_percentile) <= checkOutliers_variable2 ~
+                    "both axes",
+                TRUE ~
+                    "not an outlier"
+            )
+        )
+    
+    ggplot_output <- ggplot_data %>%
+        dplyr::rename(`Outlier on:` = outlier) %>%
+        ggplot2::ggplot(aes(x = checkOutliers_variable1, y = checkOutliers_variable2)) +
+        ggplot2::theme_bw() +
+        ggplot2::geom_point(aes(color = `Outlier on:`)) +
+        ggplot2::xlab(variable1_text) +
+        ggplot2::ylab(variable2_text) +
+        ggplot2::ggtitle(
+            label = title_text,
+            subtitle = paste0(
+                subtitle_text,
+                " (outliers ≥ ",
+                outlier_percentile * 100,
+                "th percentile)"
+            )
+        )
+    
+    names(ggplot_data)[names(ggplot_data) == "checkOutliers_variable1"] <- variable1_text
+    names(ggplot_data)[names(ggplot_data) == "checkOutliers_variable2"] <- variable2_text
+    
+    outliers_only <- ggplot_data %>%
+        dplyr::filter(outlier != "not an outlier")
+    
+    list(
+        outliers_labeled = ggplot_data,
+        outliers_only = outliers_only,
+        ggplot_output = ggplot_output
     )
     
 }

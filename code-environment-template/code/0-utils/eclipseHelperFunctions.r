@@ -614,7 +614,7 @@ getLastWeekOfEclipsePartnerData <- function(data) {
 OTRSumOutcomesCoreFunction <- function(
     data, # OTR dataset
     source, # string variable that generally corresponds to data argument
-    outcome_to_sum, # OTR variable to sum
+    outcome_to_sum, # OTR variable to sum; allowed values = "ga_sessions", "ga_screenviews", "ga_uniquescreenviews", or "ga_avgscreenviewduration"
     datevar = "start_date", # OTR date variable; must be identical between data and data2
     sum_interval = "calendar_month" # "calendar_month" or "week" (i.e., week starting at and including datevar)
 ) {
@@ -680,35 +680,40 @@ OTRSumOutcomes <- function(
             datevar = datevar,
             outcome_to_sum = outcome_to_sum,
             sum_interval = sum_interval
-        )
+        ) %>%
+        tidyr::replace_na(list(summed_outcome = 0))
     
-    if (!is.null(data2)) data <- data %>%
-        dplyr::full_join(
-            y = data2 %>%
-                OTRSumOutcomesCoreFunction(
-                    source = source2,
-                    datevar = datevar,
-                    outcome_to_sum = outcome_to_sum,
-                    sum_interval = sum_interval
-                ),
-            by = c(
+    if (!is.null(data2)) {
+        
+        data <- data %>%
+            dplyr::full_join(
+                y = data2 %>%
+                    OTRSumOutcomesCoreFunction(
+                        source = source2,
+                        datevar = datevar,
+                        outcome_to_sum = outcome_to_sum,
+                        sum_interval = sum_interval
+                    ),
+                by = c(
 
-                "participant_id",
-                sum_interval
+                    "participant_id",
+                    sum_interval
 
-            )
-        ) %>%
-        dplyr::rowwise() %>%
-        dplyr::mutate(sources = paste0(dplyr::pick(dplyr::starts_with("sources.")), collapse = ", ") %>% removeNAFromString()) %>%
-        dplyr::mutate_at(
-            vars(dplyr::matches("summed_outcome.")),
-            function(x) ifelse(is.na(x), 0, x)
-        ) %>%
-        dplyr::mutate(summed_outcome = rowSums(dplyr::pick(dplyr::matches("summed_outcome.")))) %>%
-        dplyr::select(-c(
-            dplyr::matches("summed_outcome."),
-            dplyr::matches("sources.")
-        ))
+                )
+            ) %>%
+            dplyr::rowwise() %>%
+            dplyr::mutate(sources = paste0(dplyr::pick(dplyr::starts_with("sources.")), collapse = ", ") %>% removeNAFromString()) %>%
+            dplyr::mutate_at(
+                vars(dplyr::matches("summed_outcome.")),
+                function(x) ifelse(is.na(x), 0, x)
+            ) %>%
+            dplyr::mutate(summed_outcome = rowSums(dplyr::pick(dplyr::matches("summed_outcome.")))) %>%
+            dplyr::select(-c(
+                dplyr::matches("summed_outcome."),
+                dplyr::matches("sources.")
+            ))
+        
+    }
     
     names(data)[names(data) == sum_interval] <- "sum_interval"
     data <- data %>%
@@ -734,8 +739,11 @@ OTRMeanMedianOutcomes <- function(
         # values
     outcome_for_mean_and_median = "summed_outcome", # OTR-based variable for which to take the mean and median per participant;
         # "summed_outcome" default from OTRSumOutcomes() objects
-    sum_interval = "calendar_month" # "calendar_month" or "week" (i.e., week starting at and including OTRSumOutcomes(datevar));
+    sum_interval = "calendar_month", # "calendar_month" or "week" (i.e., week starting at and including OTRSumOutcomes(datevar));
         # "calendar_month" default from OTRSumOutcomes() objects
+    original_outcome_to_sum = NULL # (optional) OTR variable to sum; allowed values = "ga_sessions", "ga_screenviews",
+        # "ga_uniquescreenviews", or "ga_avgscreenviewduration"; used to categorize mean_outcome and median_outcome per
+        # participant for EE1.1; usually done with sum_interval = "week"
 ) {
     
     function_args <- c(as.list(environment())) # source: https://stackoverflow.com/questions/11885207/get-all-parameters-as-list
@@ -780,6 +788,59 @@ OTRMeanMedianOutcomes <- function(
         
         ) %>%
         dplyr::ungroup()
+    
+    if (!is.null(original_outcome_to_sum)) {
+        
+        if (original_outcome_to_sum %in% c(
+            
+            "ga_sessions",
+            "ga_screenviews",
+            "ga_uniquescreenviews"
+            
+        )) data <- data %>%
+            dplyr::mutate(
+                
+                mean_outcome_category = dplyr::case_when(
+                    mean_outcome < 1 ~ "<1",
+                    1 <= mean_outcome & mean_outcome <= 2 ~ "1-2",
+                    2 < mean_outcome & mean_outcome <= 4 ~ ">2-4",
+                    4 < mean_outcome & mean_outcome <= 10 ~ ">4-10",
+                    10 < mean_outcome ~ ">10"
+                ),
+                median_outcome_category = dplyr::case_when(
+                    median_outcome < 1 ~ "<1",
+                    1 <= median_outcome & median_outcome <= 2 ~ "1-2",
+                    2 < median_outcome & median_outcome <= 4 ~ ">2-4",
+                    4 < median_outcome & median_outcome <= 10 ~ ">4-10",
+                    10 < median_outcome ~ ">10"
+                )
+                
+            )
+        if (original_outcome_to_sum == "ga_avgscreenviewduration") data <- data %>%
+            dplyr::mutate(
+                
+                mean_outcome_category = dplyr::case_when(
+                    mean_outcome < 2 ~ "<2",
+                    2 <= mean_outcome & mean_outcome <= 5 ~ "2-5",
+                    5 < mean_outcome & mean_outcome <= 10 ~ ">5-10",
+                    10 < mean_outcome & mean_outcome <= 20 ~ ">10-20",
+                    20 < mean_outcome & mean_outcome <= 40 ~ ">20-40",
+                    40 < mean_outcome & mean_outcome <= 60 ~ ">40-60",
+                    60 < mean_outcome ~ ">60"
+                ),
+                median_outcome_category = dplyr::case_when(
+                    median_outcome < 2 ~ "<2",
+                    2 <= median_outcome & median_outcome <= 5 ~ "2-5",
+                    5 < median_outcome & median_outcome <= 10 ~ ">5-10",
+                    10 < median_outcome & median_outcome <= 20 ~ ">10-20",
+                    20 < median_outcome & median_outcome <= 40 ~ ">20-40",
+                    40 < median_outcome & median_outcome <= 60 ~ ">40-60",
+                    60 < median_outcome ~ ">60"
+                )
+                
+            )
+        
+    }
     
     output_list <- list(
         mau_data = function_args$data,
@@ -1333,15 +1394,19 @@ mergeForEE11 <- function(
             arm,
             n_obs_sum_interval,
             mean_outcome,
-            median_outcome
-
+            median_outcome,
+            mean_outcome_category,
+            median_outcome_category
+            
         ) %>%
         dplyr::rename(
 
             otr_app_sessions_per_week_n_obs = n_obs_sum_interval,
             otr_app_sessions_per_week_mean = mean_outcome,
-            otr_app_sessions_per_week_median = median_outcome
-
+            otr_app_sessions_per_week_mean_category = mean_outcome_category,
+            otr_app_sessions_per_week_median = median_outcome,
+            otr_app_sessions_per_week_median_category = median_outcome_category
+            
         ) %>%
         dplyr::full_join(
             y = data$mean_and_median_otr_time_spent_per_week %>%
@@ -1351,14 +1416,74 @@ mergeForEE11 <- function(
                     arm,
                     n_obs_sum_interval,
                     mean_outcome,
-                    median_outcome
-
+                    median_outcome,
+                    mean_outcome_category,
+                    median_outcome_category
+                    
                 ) %>%
                 dplyr::rename(
                     
                     otr_time_spent_per_week_n_obs = n_obs_sum_interval,
                     otr_time_spent_per_week_mean = mean_outcome,
-                    otr_time_spent_per_week_median = median_outcome
+                    otr_time_spent_per_week_mean_category = mean_outcome_category,
+                    otr_time_spent_per_week_median = median_outcome,
+                    otr_time_spent_per_week_median_category = median_outcome_category
+                    
+                ),
+            by = c(
+                
+                "identifier",
+                "arm"
+            )
+        ) %>%
+        dplyr::full_join(
+            y = data$mean_and_median_otr_screen_views_per_week %>%
+                dplyr::distinct(
+
+                    identifier,
+                    arm,
+                    n_obs_sum_interval,
+                    mean_outcome,
+                    median_outcome,
+                    mean_outcome_category,
+                    median_outcome_category
+                    
+                ) %>%
+                dplyr::rename(
+                    
+                    otr_screen_views_per_week_n_obs = n_obs_sum_interval,
+                    otr_screen_views_per_week_mean = mean_outcome,
+                    otr_screen_views_per_week_mean_category = mean_outcome_category,
+                    otr_screen_views_per_week_median = median_outcome,
+                    otr_screen_views_per_week_median_category = median_outcome_category
+                    
+                ),
+            by = c(
+                
+                "identifier",
+                "arm"
+            )
+        ) %>%
+        dplyr::full_join(
+            y = data$mean_and_median_otr_unique_screen_views_per_week %>%
+                dplyr::distinct(
+
+                    identifier,
+                    arm,
+                    n_obs_sum_interval,
+                    mean_outcome,
+                    median_outcome,
+                    mean_outcome_category,
+                    median_outcome_category
+                    
+                ) %>%
+                dplyr::rename(
+                    
+                    otr_unique_screen_views_per_week_n_obs = n_obs_sum_interval,
+                    otr_unique_screen_views_per_week_mean = mean_outcome,
+                    otr_unique_screen_views_per_week_mean_category = mean_outcome_category,
+                    otr_unique_screen_views_per_week_median = median_outcome,
+                    otr_unique_screen_views_per_week_median_category = median_outcome_category
                     
                 ),
             by = c(

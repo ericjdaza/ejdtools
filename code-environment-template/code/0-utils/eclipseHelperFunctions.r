@@ -741,9 +741,9 @@ OTRMeanMedianOutcomes <- function(
         # "summed_outcome" default from OTRSumOutcomes() objects
     sum_interval = "calendar_month", # "calendar_month" or "week" (i.e., week starting at and including OTRSumOutcomes(datevar));
         # "calendar_month" default from OTRSumOutcomes() objects
-    original_outcome_to_sum = NULL # (optional) OTR variable to sum; allowed values = "ga_sessions", "ga_screenviews",
-        # "ga_uniquescreenviews", or "ga_avgscreenviewduration"; used to categorize mean_outcome and median_outcome per
-        # participant for EE1.1; usually done with sum_interval = "week"
+    original_outcome_units = "counts" # (optional) variable type to sum; allowed values = "counts" (e.g., for OTR variables
+        # "ga_sessions", "ga_screenviews", "ga_uniquescreenviews") or "minutes" (e.g., for OTR variable "ga_avgscreenviewduration");
+        # used to categorize mean_outcome and median_outcome per participant for Exploratory Objectives
 ) {
     
     function_args <- c(as.list(environment())) # source: https://stackoverflow.com/questions/11885207/get-all-parameters-as-list
@@ -789,56 +789,100 @@ OTRMeanMedianOutcomes <- function(
         ) %>%
         dplyr::ungroup()
     
-    if (!is.null(original_outcome_to_sum)) {
+    if (!is.null(original_outcome_units)) {
         
-        if (original_outcome_to_sum %in% c(
+        if (original_outcome_units == "counts") {
             
-            "ga_sessions",
-            "ga_screenviews",
-            "ga_uniquescreenviews"
+            if (sum_interval == "week") data <- data %>%
+                dplyr::mutate(
+
+                    mean_outcome_category = dplyr::case_when(
+                        mean_outcome < 1 ~ "<1",
+                        1 <= mean_outcome & mean_outcome <= 2 ~ "1-2",
+                        2 < mean_outcome & mean_outcome <= 4 ~ ">2-4",
+                        4 < mean_outcome & mean_outcome <= 10 ~ ">4-10",
+                        10 < mean_outcome ~ ">10"
+                    ),
+                    median_outcome_category = dplyr::case_when(
+                        median_outcome < 1 ~ "<1",
+                        1 <= median_outcome & median_outcome <= 2 ~ "1-2",
+                        2 < median_outcome & median_outcome <= 4 ~ ">2-4",
+                        4 < median_outcome & median_outcome <= 10 ~ ">4-10",
+                        10 < median_outcome ~ ">10"
+                    )
+                    
+                )
+            if (sum_interval == "calendar_month") data <- data %>%
+                dplyr::mutate(
+
+                    mean_outcome_category = dplyr::case_when(
+                        mean_outcome < 4 ~ "<4",
+                        4 <= mean_outcome & mean_outcome <= 8 ~ "4-8",
+                        8 < mean_outcome & mean_outcome <= 16 ~ ">8-16",
+                        16 < mean_outcome & mean_outcome <= 40 ~ ">16-40",
+                        40 < mean_outcome ~ ">40"
+                    ),
+                    median_outcome_category = dplyr::case_when(
+                        median_outcome < 4 ~ "<4",
+                        4 <= median_outcome & median_outcome <= 8 ~ "4-8",
+                        8 < median_outcome & median_outcome <= 16 ~ ">8-16",
+                        16 < median_outcome & median_outcome <= 40 ~ ">16-40",
+                        40 < median_outcome ~ ">40"
+                    )
+                    
+                )
             
-        )) data <- data %>%
-            dplyr::mutate(
-                
-                mean_outcome_category = dplyr::case_when(
-                    mean_outcome < 1 ~ "<1",
-                    1 <= mean_outcome & mean_outcome <= 2 ~ "1-2",
-                    2 < mean_outcome & mean_outcome <= 4 ~ ">2-4",
-                    4 < mean_outcome & mean_outcome <= 10 ~ ">4-10",
-                    10 < mean_outcome ~ ">10"
-                ),
-                median_outcome_category = dplyr::case_when(
-                    median_outcome < 1 ~ "<1",
-                    1 <= median_outcome & median_outcome <= 2 ~ "1-2",
-                    2 < median_outcome & median_outcome <= 4 ~ ">2-4",
-                    4 < median_outcome & median_outcome <= 10 ~ ">4-10",
-                    10 < median_outcome ~ ">10"
+        }
+        if (original_outcome_units == "minutes") {
+            
+            if (sum_interval == "week") data <- data %>%
+                dplyr::mutate(
+
+                    mean_outcome_category = dplyr::case_when(
+                        mean_outcome < 2 ~ "<2",
+                        2 <= mean_outcome & mean_outcome <= 5 ~ "2-5",
+                        5 < mean_outcome & mean_outcome <= 10 ~ ">5-10",
+                        10 < mean_outcome & mean_outcome <= 20 ~ ">10-20",
+                        20 < mean_outcome & mean_outcome <= 40 ~ ">20-40",
+                        40 < mean_outcome & mean_outcome <= 60 ~ ">40-60",
+                        60 < mean_outcome ~ ">60"
+                    ),
+                    median_outcome_category = dplyr::case_when(
+                        median_outcome < 2 ~ "<2",
+                        2 <= median_outcome & median_outcome <= 5 ~ "2-5",
+                        5 < median_outcome & median_outcome <= 10 ~ ">5-10",
+                        10 < median_outcome & median_outcome <= 20 ~ ">10-20",
+                        20 < median_outcome & median_outcome <= 40 ~ ">20-40",
+                        40 < median_outcome & median_outcome <= 60 ~ ">40-60",
+                        60 < median_outcome ~ ">60"
+                    )
+                    
                 )
-                
-            )
-        if (original_outcome_to_sum == "ga_avgscreenviewduration") data <- data %>%
-            dplyr::mutate(
-                
-                mean_outcome_category = dplyr::case_when(
-                    mean_outcome < 2 ~ "<2",
-                    2 <= mean_outcome & mean_outcome <= 5 ~ "2-5",
-                    5 < mean_outcome & mean_outcome <= 10 ~ ">5-10",
-                    10 < mean_outcome & mean_outcome <= 20 ~ ">10-20",
-                    20 < mean_outcome & mean_outcome <= 40 ~ ">20-40",
-                    40 < mean_outcome & mean_outcome <= 60 ~ ">40-60",
-                    60 < mean_outcome ~ ">60"
-                ),
-                median_outcome_category = dplyr::case_when(
-                    median_outcome < 2 ~ "<2",
-                    2 <= median_outcome & median_outcome <= 5 ~ "2-5",
-                    5 < median_outcome & median_outcome <= 10 ~ ">5-10",
-                    10 < median_outcome & median_outcome <= 20 ~ ">10-20",
-                    20 < median_outcome & median_outcome <= 40 ~ ">20-40",
-                    40 < median_outcome & median_outcome <= 60 ~ ">40-60",
-                    60 < median_outcome ~ ">60"
+            if (sum_interval == "calendar_month") data <- data %>%
+                dplyr::mutate(
+
+                    mean_outcome_category = dplyr::case_when(
+                        mean_outcome < 8 ~ "<8",
+                        8 <= mean_outcome & mean_outcome <= 20 ~ "8-20",
+                        20 < mean_outcome & mean_outcome <= 40 ~ ">20-40",
+                        40 < mean_outcome & mean_outcome <= 80 ~ ">40-80",
+                        80 < mean_outcome & mean_outcome <= 160 ~ ">80-160",
+                        160 < mean_outcome & mean_outcome <= 240 ~ ">160-240",
+                        240 < mean_outcome ~ ">240"
+                    ),
+                    median_outcome_category = dplyr::case_when(
+                        median_outcome < 8 ~ "<8",
+                        8 <= median_outcome & median_outcome <= 20 ~ "8-20",
+                        20 < median_outcome & median_outcome <= 40 ~ ">20-40",
+                        40 < median_outcome & median_outcome <= 80 ~ ">40-80",
+                        80 < median_outcome & median_outcome <= 160 ~ ">80-160",
+                        160 < median_outcome & median_outcome <= 240 ~ ">160-240",
+                        240 < median_outcome ~ ">240"
+                    )
+                    
                 )
-                
-            )
+            
+        }
         
     }
     
@@ -1278,9 +1322,45 @@ calculateBMI <- function(
 
 
 # See SAP Section 7.4.1.1 Exploratory Endpoint 1.1 (EE1.1)
-mergeForEE11 <- function(
-    data # must be a list object
+
+## subfunction
+mergeForEE11Helper <- function(
+    data,
+    data_suffix,
+    mean_or_median
 ) {
+    
+    output_data <- data[[paste0("mean_and_median_", data_suffix)]]
+    
+    names(output_data)[names(output_data) == paste0(mean_or_median, "_outcome")] <- "mergeForEE11Helper_outcome"
+    names(output_data)[names(output_data) == paste0(mean_or_median, "_outcome_category")] <- "mergeForEE11Helper_outcome_category"
+    
+    output_data <- output_data %>%
+        dplyr::distinct(
+
+            identifier,
+            arm,
+            n_obs_sum_interval,
+            mergeForEE11Helper_outcome,
+            mergeForEE11Helper_outcome_category
+            
+        )
+    
+    names(output_data)[names(output_data) == "n_obs_sum_interval"] <- paste0(data_suffix, "_n_obs")
+    names(output_data)[names(output_data) == "mergeForEE11Helper_outcome"] <- paste0(data_suffix, "_", mean_or_median)
+    names(output_data)[names(output_data) == "mergeForEE11Helper_outcome_category"] <- paste0(data_suffix, "_", mean_or_median, "_category")
+    
+    output_data
+    
+}
+
+## main function
+mergeForEE11 <- function(
+    data, # must be a list object
+    partner_specific_flag = NULL # = "fitbit", "noom"; adds additional partner-specific variables
+) {
+    
+    # Cecelia, Fitbit, Noom data
     
     cfn_per_month <- data$app_sessions_per_month %>%
         dplyr::distinct(
@@ -1292,71 +1372,37 @@ mergeForEE11 <- function(
             
         ) %>%
         dplyr::rename(app_sessions_per_month = summed_outcome)
-    cfn <- data$mean_and_median_monthly_app_sessions%>%
-        dplyr::distinct(
-
-            identifier,
-            arm,
-            n_obs_sum_interval,
-            mean_outcome,
-            median_outcome
-
-        ) %>%
-        dplyr::rename(
-
-            monthly_app_sessions_n_obs = n_obs_sum_interval,
-            monthly_app_sessions_mean = mean_outcome,
-            monthly_app_sessions_median = median_outcome
-
+    temp_mean_median <- "mean"
+    cfn_per_month_per_participant_means <- data %>% mergeForEE11Helper("monthly_app_sessions", temp_mean_median) %>%
+        dplyr::full_join(
+            y = data %>% mergeForEE11Helper("monthly_unique_screen_views", temp_mean_median),
+            by = c("identifier", "arm")
         ) %>%
         dplyr::full_join(
-            y = data$mean_and_median_monthly_unique_screen_views %>%
-                dplyr::distinct(
-
-                    identifier,
-                    arm,
-                    n_obs_sum_interval,
-                    mean_outcome,
-                    median_outcome
-
-                ) %>%
-                dplyr::rename(
-                    
-                    monthly_unique_screen_views_n_obs = n_obs_sum_interval,
-                    monthly_unique_screen_views_mean = mean_outcome,
-                    monthly_unique_screen_views_median = median_outcome
-                    
-                ),
-            by = c(
-                
-                "identifier",
-                "arm"
-            )
-        ) %>%
-        dplyr::full_join(
-            y = data$mean_and_median_monthly_screen_view_duration %>%
-                dplyr::distinct(
-
-                    identifier,
-                    arm,
-                    n_obs_sum_interval,
-                    mean_outcome,
-                    median_outcome
-
-                ) %>%
-                dplyr::rename(
-                    
-                    monthly_screen_view_duration_n_obs = n_obs_sum_interval,
-                    monthly_screen_view_duration_mean = mean_outcome,
-                    monthly_screen_view_duration_median = median_outcome
-                    
-                ),
-            by = c(
-                
-                "identifier",
-                "arm"
-            )
+            y = data %>% mergeForEE11Helper("monthly_screen_view_duration", temp_mean_median),
+            by = c("identifier", "arm")
         )
+    temp_mean_median <- "median"
+    cfn_per_month_per_participant_medians <- data %>% mergeForEE11Helper("monthly_app_sessions", temp_mean_median) %>%
+        dplyr::full_join(
+            y = data %>% mergeForEE11Helper("monthly_unique_screen_views", temp_mean_median),
+            by = c("identifier", "arm")
+        ) %>%
+        dplyr::full_join(
+            y = data %>% mergeForEE11Helper("monthly_screen_view_duration", temp_mean_median),
+            by = c("identifier", "arm")
+        )
+    temp_mean_median <- NULL
+    cfn <- cfn_per_month_per_participant_means %>%
+        dplyr::select(-dplyr::matches("_n_obs")) %>%
+        dplyr::full_join(
+            y = cfn_per_month_per_participant_medians,
+            by = c("identifier", "arm")
+        )
+    
+    
+    
+    # OTR data
     
     otr_per_week <- data$otr_app_sessions_per_week %>%
         dplyr::distinct(
@@ -1379,113 +1425,41 @@ mergeForEE11 <- function(
 
                 ) %>%
                 dplyr::rename(time_spent_per_week = summed_outcome),
-            by = c(
-                
-                "identifier",
-                "arm",
-                "week"
-                
-            )
+            by = c("identifier", "arm", "week")
         )
-    otr <- data$mean_and_median_otr_app_sessions_per_week %>%
-        dplyr::distinct(
-
-            identifier,
-            arm,
-            n_obs_sum_interval,
-            mean_outcome,
-            median_outcome,
-            mean_outcome_category,
-            median_outcome_category
-            
-        ) %>%
-        dplyr::rename(
-
-            otr_app_sessions_per_week_n_obs = n_obs_sum_interval,
-            otr_app_sessions_per_week_mean = mean_outcome,
-            otr_app_sessions_per_week_mean_category = mean_outcome_category,
-            otr_app_sessions_per_week_median = median_outcome,
-            otr_app_sessions_per_week_median_category = median_outcome_category
-            
+    temp_mean_median <- "mean"
+    otr_per_week_per_participant_means <- data %>% mergeForEE11Helper("otr_app_sessions_per_week", temp_mean_median) %>%
+        dplyr::full_join(
+            y = data %>% mergeForEE11Helper("otr_time_spent_per_week", temp_mean_median),
+            by = c("identifier", "arm")
         ) %>%
         dplyr::full_join(
-            y = data$mean_and_median_otr_time_spent_per_week %>%
-                dplyr::distinct(
-
-                    identifier,
-                    arm,
-                    n_obs_sum_interval,
-                    mean_outcome,
-                    median_outcome,
-                    mean_outcome_category,
-                    median_outcome_category
-                    
-                ) %>%
-                dplyr::rename(
-                    
-                    otr_time_spent_per_week_n_obs = n_obs_sum_interval,
-                    otr_time_spent_per_week_mean = mean_outcome,
-                    otr_time_spent_per_week_mean_category = mean_outcome_category,
-                    otr_time_spent_per_week_median = median_outcome,
-                    otr_time_spent_per_week_median_category = median_outcome_category
-                    
-                ),
-            by = c(
-                
-                "identifier",
-                "arm"
-            )
+            y = data %>% mergeForEE11Helper("otr_screen_views_per_week", temp_mean_median),
+            by = c("identifier", "arm")
         ) %>%
         dplyr::full_join(
-            y = data$mean_and_median_otr_screen_views_per_week %>%
-                dplyr::distinct(
-
-                    identifier,
-                    arm,
-                    n_obs_sum_interval,
-                    mean_outcome,
-                    median_outcome,
-                    mean_outcome_category,
-                    median_outcome_category
-                    
-                ) %>%
-                dplyr::rename(
-                    
-                    otr_screen_views_per_week_n_obs = n_obs_sum_interval,
-                    otr_screen_views_per_week_mean = mean_outcome,
-                    otr_screen_views_per_week_mean_category = mean_outcome_category,
-                    otr_screen_views_per_week_median = median_outcome,
-                    otr_screen_views_per_week_median_category = median_outcome_category
-                    
-                ),
-            by = c(
-                
-                "identifier",
-                "arm"
-            )
+            y = data %>% mergeForEE11Helper("otr_unique_screen_views_per_week", temp_mean_median),
+            by = c("identifier", "arm")
+        )
+    temp_mean_median <- "median"
+    otr_per_week_per_participant_medians <- data %>% mergeForEE11Helper("otr_app_sessions_per_week", temp_mean_median) %>%
+        dplyr::full_join(
+            y = data %>% mergeForEE11Helper("otr_time_spent_per_week", temp_mean_median),
+            by = c("identifier", "arm")
         ) %>%
         dplyr::full_join(
-            y = data$mean_and_median_otr_unique_screen_views_per_week %>%
-                dplyr::distinct(
-
-                    identifier,
-                    arm,
-                    n_obs_sum_interval,
-                    mean_outcome,
-                    median_outcome,
-                    mean_outcome_category,
-                    median_outcome_category
-                    
-                ) %>%
-                dplyr::rename(
-                    
-                    otr_unique_screen_views_per_week_n_obs = n_obs_sum_interval,
-                    otr_unique_screen_views_per_week_mean = mean_outcome,
-                    otr_unique_screen_views_per_week_mean_category = mean_outcome_category,
-                    otr_unique_screen_views_per_week_median = median_outcome,
-                    otr_unique_screen_views_per_week_median_category = median_outcome_category
-                    
-                ),
+            y = data %>% mergeForEE11Helper("otr_screen_views_per_week", temp_mean_median),
+            by = c("identifier", "arm")
+        ) %>%
+        dplyr::full_join(
+            y = data %>% mergeForEE11Helper("otr_unique_screen_views_per_week", temp_mean_median),
+            by = c("identifier", "arm")
+        )
+    temp_mean_median <- NULL
+    otr <- otr_per_week_per_participant_means %>%
+        dplyr::select(-dplyr::matches("_n_obs")) %>%
+        dplyr::full_join(
+            y = otr_per_week_per_participant_medians,
             by = c(
                 
                 "identifier",
@@ -1493,21 +1467,113 @@ mergeForEE11 <- function(
             )
         )
     
+    
+    
+    # all data
+    cfn_otr_per_participant_means <- cfn_per_month_per_participant_means %>%
+        dplyr::full_join(
+            y = otr_per_week_per_participant_means,
+            by = c("identifier", "arm")
+        )
+    cfn_otr_per_participant_medians <- cfn_per_month_per_participant_medians %>%
+        dplyr::full_join(
+            y = otr_per_week_per_participant_medians,
+            by = c("identifier", "arm")
+        )
     cfn_otr <- cfn %>%
         dplyr::full_join(
             y = otr,
-            by = c(
-                
-                "identifier",
-                "arm"
-            )
-        )
+            by = c("identifier", "arm")
+        )    
+    
+    
+    
+    # add partner-specific data
+    if (!is.null(partner_specific_flag)) {
+        
+        if (partner_specific_flag == "fitbit") {
+            
+            cfn_otr <- cfn_otr %>%
+                dplyr::full_join(
+                    y = data$fitbit_number_of_premium_feature_engagements %>%
+                        dplyr::distinct(
+                            
+                            identifier,
+                            arm,
+                            summed_outcome,
+                            summed_outcome_category
+                            
+                        ) %>%
+                        dplyr::rename(
+                            
+                            fitbit_number_of_premium_feature_engagements = summed_outcome,
+                            fitbit_number_of_premium_feature_engagements_category = summed_outcome_category
+                        
+                        ),
+                    by = c("identifier", "arm")
+                )
+            
+        }
+        if (partner_specific_flag == "noom") {
+            
+            cfn_otr <- cfn_otr %>%
+                dplyr::full_join(
+                    y = data$noom_number_of_coach_messages_sent %>%
+                        dplyr::distinct(
+                            
+                            identifier,
+                            arm,
+                            summed_outcome,
+                            summed_outcome_category
+                            
+                        ) %>%
+                        dplyr::rename(
+                            
+                            noom_number_of_coach_messages_sent = summed_outcome,
+                            noom_number_of_coach_messages_sent_category = summed_outcome_category
+                        
+                        ),
+                    by = c("identifier", "arm")
+                ) %>%
+                dplyr::full_join(
+                    y = data$noom_number_of_weight_measures_entered %>%
+                        dplyr::distinct(
+                            
+                            identifier,
+                            arm,
+                            summed_outcome,
+                            summed_outcome_category
+                            
+                        ) %>%
+                        dplyr::rename(
+                            
+                            noom_number_of_weight_measures_entered = summed_outcome,
+                            noom_number_of_weight_measures_entered_category = summed_outcome_category
+                        
+                        ),
+                    by = c("identifier", "arm")
+                )
+            
+        }
+        
+    }
+    
+    
     
     list(
+        
         cfn_per_month = cfn_per_month,
+        cfn_per_month_per_participant_means = cfn_per_month_per_participant_means,
+        cfn_per_month_per_participant_medians = cfn_per_month_per_participant_medians,
         cfn = cfn,
+        
         otr_per_week = otr_per_week,
+        otr_per_week_per_participant_means = otr_per_week_per_participant_means,
+        otr_per_week_per_participant_medians = otr_per_week_per_participant_medians,
         otr = otr,
+        
+        cfn_otr_per_participant_means = cfn_otr_per_participant_means,
+        cfn_otr_per_participant_medians = cfn_otr_per_participant_medians,
         cfn_otr = cfn_otr
     )
     

@@ -23,7 +23,7 @@ setDisplayParameters <- function(
     if (add_n_obs == TRUE) {
         
         statistic_all_continuous <- c(
-            "{N_obs}",
+            "{N_nonmiss}",
             statistic_all_continuous
         )
         statistic_all_categorical <- c("{n} ({p}%) (N={N})")
@@ -62,7 +62,7 @@ setDisplayParameters <- function(
     if (add_n_obs == TRUE) {
         
         label_all_continuous <- c(
-            "N",
+            "N (not missing)",
             label_all_continuous
         )
         

@@ -1644,3 +1644,83 @@ checkOutliers <- function(
     )
     
 }
+
+
+
+# Table export helper post-analysis using gtsummary.
+tableExportHelper <- function(
+    gtsummary_object,
+    output_filetypes = c(".html", ".rtf"), # allowed values: ".html", ".rtf", c(".html", ".rtf") for both
+    output_filename,
+    data_processed_folder = env_yaml$DATA$DATA_PROCESSED,
+    analysis_code_folder,
+    number_of_statistical_hypothesis_tests = 0,
+    tableExportHelper_add_ci_conf_level = 0.95 # set to 0.95 even when not calculating CIs
+) {
+    
+    for (output_filetype in output_filetypes) {
+        
+        # Store in data folder.
+        gtsummary_object %>%
+            gtsummary::as_gt() %>%
+            gt::gtsave(
+                dplyr::case_when(
+                    tableExportHelper_add_ci_conf_level == 0.95 ~ paste0(
+                        data_processed_folder,
+                        output_filename,
+                        output_filetype
+                    ),
+                    tableExportHelper_add_ci_conf_level != 0.95 ~ paste0(
+                        data_processed_folder,
+                        output_filename,
+                        "_multiplicity_adjusted",
+                        output_filetype
+                    )
+                )
+            )
+        
+        # Store in code folder for easy checking in GitHub.
+        gtsummary_object %>%
+            gtsummary::as_gt() %>%
+            gt::gtsave(
+                dplyr::case_when(
+                    tableExportHelper_add_ci_conf_level == 0.95 ~ paste0(
+                        analysis_code_folder,
+                        output_filename,
+                        output_filetype
+                    ),
+                    tableExportHelper_add_ci_conf_level != 0.95 ~ paste0(
+                        analysis_code_folder,
+                        output_filename,
+                        "_multiplicity_adjusted",
+                        output_filetype
+                    )
+                )
+            )
+        
+    }
+    
+    # Number of hypothesis tests for multiplicity adjustment of all confidence intervals,
+    # p-values, etc.
+    
+    # Store in data folder.
+    dplyr::tibble(tests = number_of_statistical_hypothesis_tests) %>%
+        readr::write_csv(
+            paste0(
+                data_processed_folder,
+                output_filename,
+                "_tests.csv"
+            )
+        )
+    
+    # Store in code folder for easy checking in GitHub.
+    dplyr::tibble(tests = number_of_statistical_hypothesis_tests) %>%
+        readr::write_csv(
+            paste0(
+                analysis_code_folder,
+                output_filename,
+                "_tests.csv"
+            )
+        )
+    
+}

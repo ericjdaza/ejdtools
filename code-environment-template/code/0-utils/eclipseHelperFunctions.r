@@ -1032,22 +1032,13 @@ makeA1cFootnote <- function(
 ) {
     
     names(data)[names(data) == variable] <- "makeA1cFootnote_variable"
+    names(data)[names(data) == paste0(baseline_or_mo3, "_a1c_valid")] <- "makeA1cFootnote_a1c_valid"
     
-    if (baseline_or_mo3 == "baseline") {
-        
-        tally_include_in_analysis <- tally_mo0$include_in_analysis %>% setNames(tally_mo0$mo0_actual_month_from_enrollment_completed)
-        descriptor <- "Baseline"
-        
-    }
-    if (baseline_or_mo3 == "mo3") {
-        
-        tally_include_in_analysis <- tally_mo3$include_in_analysis %>% setNames(tally_mo3$mo3_actual_month_from_enrollment_completed)
-        descriptor <- "Month-3"
-        
-    }
+    if (baseline_or_mo3 == "baseline") descriptor <- "Baseline"
+    if (baseline_or_mo3 == "mo3") descriptor <- "Month-3"
     
     footnote_data_valid <- data %>%
-        dplyr::filter(makeA1cFootnote_variable %in% names(tally_include_in_analysis[tally_include_in_analysis == TRUE])) %>%
+        dplyr::filter(makeA1cFootnote_a1c_valid == TRUE) %>%
         dplyr::distinct(
 
             makeA1cFootnote_variable,
@@ -1073,6 +1064,7 @@ makeA1cFootnote <- function(
                     makeA1cFootnote_variable
                 )
             ),
+            makeA1cFootnote_variable = gsub("NA", "unknown", makeA1cFootnote_variable),
             n = dplyr::case_when(
                 length(footnote_data_valid$n) == 1 ~ n,
                 TRUE ~ ifelse(
@@ -1088,7 +1080,7 @@ makeA1cFootnote <- function(
         )
 
     footnote_data_invalid <- data %>%
-        dplyr::filter(makeA1cFootnote_variable %in% names(tally_include_in_analysis[tally_include_in_analysis == FALSE])) %>%
+        dplyr::filter(makeA1cFootnote_a1c_valid == FALSE) %>%
         dplyr::distinct(
 
             makeA1cFootnote_variable,
@@ -1114,6 +1106,7 @@ makeA1cFootnote <- function(
                     makeA1cFootnote_variable
                 )
             ),
+            makeA1cFootnote_variable = gsub("NA", "unknown", makeA1cFootnote_variable),
             n = dplyr::case_when(
                 length(footnote_data_invalid$n) == 1 ~ n,
                 TRUE ~ ifelse(
@@ -1132,13 +1125,16 @@ makeA1cFootnote <- function(
     respectively_valid <- ", respectively"
     if (length(footnote_data_valid$n) == 1) {
         
-        if (as.numeric(footnote_data_valid$n) == 1) plural_valid <- ""
+        if (
+            !is.na(footnote_data_valid$n) & as.numeric(footnote_data_valid$n) == 1 |
+            is.na(footnote_data_valid$n)
+        ) plural_valid <- ""
         respectively_valid <- ""
         
     }
     footnote_valid <- paste0(
         descriptor,
-        " values analyzed: ",
+        " values analyzed were ",
         ifelse(
             length(footnote_data_valid$n) == 1,
             footnote_data_valid$n,
@@ -1156,9 +1152,8 @@ makeA1cFootnote <- function(
         ),
         " A1c value",
         plural_valid,
-        " (with timestamp",
-        plural_valid,
-        ") reported ",
+        # " (with timestamp", plural_valid, ") reported ",
+        " reported ",
         ifelse(
             2 < length(footnote_data_valid$makeA1cFootnote_variable),
             paste0(
@@ -1172,22 +1167,25 @@ makeA1cFootnote <- function(
         ),
         " months from enrollment",
         respectively_valid,
-        "; A1c ",
+        ". (A1c ",
         tolower(descriptor),
-        " values without timestamps were also analyzed (i.e., assumed to be valid)."
+        " values without timestamps were assumed to be valid for analysis.)"
     )
 
     plural_invalid <- "s"
     respectively_invalid <- ", respectively."
     if (length(footnote_data_invalid$n) == 1) {
         
-        if (as.numeric(footnote_data_invalid$n) == 1) plural_invalid <- ""
+        if (
+            !is.na(footnote_data_invalid$n) & as.numeric(footnote_data_invalid$n) == 1 |
+            is.na(footnote_data_invalid$n)
+        ) plural_invalid <- ""
         respectively_invalid <- "."
         
     }
     footnote_invalid <- paste0(
         descriptor,
-        " values not analyzed: ",
+        " values not analyzed were ",
         ifelse(
             length(footnote_data_invalid$n) == 1,
             footnote_data_invalid$n,
@@ -1205,9 +1203,8 @@ makeA1cFootnote <- function(
         ),
         " A1c value",
         plural_invalid,
-        " (with timestamp",
-        plural_invalid,
-        ") reported ",
+        # " (with timestamp", plural_valid, ") reported ",
+        " reported ",
         ifelse(
             2 < length(footnote_data_invalid$makeA1cFootnote_variable),
             paste0(

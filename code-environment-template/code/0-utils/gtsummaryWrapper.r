@@ -15,8 +15,8 @@ gtsummaryWrapper <- function(
 #         ...
 
 #     ),
-    missing = "ifany", # tbl_summary() default; allowed values: "no", "always", "ifany"
-    missing_text = "Missing", # tbl_summary() default is "Unknown"; other examples: "Missing"; not displayed if missing = "no"
+    missing = "ifany", # tbl_summary() default; other allowed values: "no", "always"
+    missing_text = "Unknown", # tbl_summary() default; other examples: "Missing (n(%))"
     modify_header_label = "**Characteristic**", # modify_header(label) default
     modify_header_all_stat_cols = "**{level} (N={n})**", # modify_header(all_stat_cols()) argument; default = "**{level}**"
     add_overall_col_label = NULL, # add_overall() argument; use to add column with overall summary statistics;
@@ -27,7 +27,9 @@ gtsummaryWrapper <- function(
     location = "row", # add_stat_label() default; other allowed values: "column"
     label_all_continuous = NULL, # use to specify digits in add_stat_label(); must be specified together with label_all_categorical
     label_all_categorical = NULL, # use to specify digits in add_stat_label(); must be specified together with label_all_continuous
-    add_p_method = NULL, # use to add p-values via add_p(); other allowed values: "default", "fisher_simulated"
+    add_p_method = NULL, # use to add p-values via add_p(); other allowed values: "default", "fisher.test", "fisher_simulated"
+    add_p_rounding_digits = NULL, # use to add digits via method from https://stackoverflow.com/questions/61638996/why-the-function-round-does-not-work-on-the-digits-of-p-value-and-how-to-adju
+    add_q = FALSE, # use to add q-values via add_q()
     add_ci_method = NULL, # use to add confidence intervals via add_ci(); other allowed values: "default", "percent"
     add_ci_conf_level = 0.95, # add_ci(conf.level) default
     relocate_c = NULL, # use to re-order column names of table_body object of tbl_summary() output
@@ -283,17 +285,58 @@ gtsummaryWrapper <- function(
     if (!is.null(add_p_method)) {
         
         if (debugging == TRUE) print("gtsummaryWrapper: Starting if block 11")
-        if (add_p_method == "default") gtsummary_out <- gtsummary_out %>% gtsummary::add_p()
-        if (add_p_method == "fisher_simulated") gtsummary_out <- gtsummary_out %>% gtsummary::add_p()
-            gtsummary::add_p( # source: https://stackoverflow.com/questions/61360954/error-in-add-p-for-variable-x-and-test-fisher-test-p-value-omitted
-                test.args = all_tests("fisher.test") ~ list(
-                    simulate.p.value = TRUE,
-                    B = 100000
-                )
+        if (add_p_method == "default") {
+          
+          if (is.null(add_p_rounding_digits)) gtsummary_out <- gtsummary_out %>% gtsummary::add_p()
+          if (!is.null(add_p_rounding_digits)) gtsummary_out <- gtsummary_out %>% gtsummary::add_p(
+            pvalue_fun = function(x) style_number(x, digits = add_p_rounding_digits)
+          )
+          
+        }
+        if (add_p_method == "fisher.test") {
+          
+          if (is.null(add_p_rounding_digits)) gtsummary_out <- gtsummary_out %>% gtsummary::add_p(
+            test = list(all_categorical() ~ "fisher.test")
+          )
+          if (!is.null(add_p_rounding_digits)) gtsummary_out <- gtsummary_out %>% gtsummary::add_p(
+            
+            test = list(all_categorical() ~ "fisher.test"),
+            pvalue_fun = function(x) style_number(x, digits = add_p_rounding_digits)
+            
+          )
+          
+        }
+        if (add_p_method == "fisher_simulated") {
+          
+          if (is.null(add_p_rounding_digits)) gtsummary_out <- gtsummary_out %>% gtsummary::add_p(
+            
+            # test = list(all_categorical() ~ "fisher.test"),
+            # source: https://stackoverflow.com/questions/61360954/error-in-add-p-for-variable-x-and-test-fisher-test-p-value-omitted
+            test.args = all_tests("fisher.test") ~ list(
+              simulate.p.value = TRUE,
+              B = 100000
             )
+            
+          )
+          if (!is.null(add_p_rounding_digits)) gtsummary_out <- gtsummary_out %>% gtsummary::add_p(
+            
+            # test = list(all_categorical() ~ "fisher.test"),
+            # source: https://stackoverflow.com/questions/61360954/error-in-add-p-for-variable-x-and-test-fisher-test-p-value-omitted
+            test.args = all_tests("fisher.test") ~ list(
+              simulate.p.value = TRUE,
+              B = 100000
+            ),
+            pvalue_fun = function(x) style_number(x, digits = add_p_rounding_digits)
+            
+          )
+          
+        }
         if (debugging == TRUE) print("gtsummaryWrapper: Ending if block 11")
         
     }
+    
+    # Add q-values.
+    if (add_q == TRUE)  gtsummary_out <- gtsummary_out %>% gtsummary::add_q()
     
     # Add confidence intervals (CIs).
     if (!is.null(add_ci_method)) {

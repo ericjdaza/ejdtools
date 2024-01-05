@@ -12,7 +12,7 @@ maskValues <- function(
     mask_identifier <- seq(1, length(unique(data[[variable]]))) %>% setNames(unique(data[[variable]]))
     
     names(data)[names(data) == variable] <- "maskValues_variable"
-    data <- data %>% dplyr::mutate(maskValues_masked_variable = mask_identifier[maskValues_variable] %>% as.character())
+    data <- data %>% dplyr::mutate(maskValues_masked_variable = mask_identifier[as.character(maskValues_variable)] %>% as.character())
     names(data)[names(data) == "maskValues_masked_variable"] <- paste0(variable, "_masked")
     if (!is.null(masked_variable)) names(data)[names(data) == paste0(variable, "_masked")] <- masked_variable
     

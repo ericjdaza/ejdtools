@@ -102,6 +102,8 @@ checkResponses_transpose_filterMismatches <- function(
         (output[,3] != output[,4]),
     ]
     
+    output <- output[!is.na(rownames(output)),]
+    
     return(output)
 
 }

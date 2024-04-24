@@ -1,5 +1,5 @@
 ---
-title: "Project: [inser project name or codename]: Power and Sample Size Calculations"
+title: "Project: [insert project name or codename]: Power and Sample Size Calculations for Two Groups"
 author: "[Eric J. Daza, DrPH, MPS](https://www.ericjdaza.com/)"
 date: "`r Sys.Date()`"
 output:
@@ -13,6 +13,11 @@ knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ```{r echo=FALSE, results='hide', message=FALSE}
+# Calculation Characteristics:
+#   mean known
+#   SD known
+#   ICC known or unknown
+# 
 # Project: [insert project name]
 #   Links: [insert project folder link]
 # 
@@ -32,9 +37,23 @@ if (!require("pacman")) install.packages("pacman") # just to make sure "pacman" 
 pacman::p_load(tidyverse, knitr, ggpubr, tinytex) # e.g., naniar, extrafont, tidyverse, reshape2, janitor, lubridate, jsonlite, arsenal, knitr, feather
 
 
+## Load custom tools.
+utils <- "/Users/ericjaydaza/Documents/Github/[project_codename]/code/0-utils/"
+files_sources <- list.files(utils)
+files_sources <- files_sources[grepl(".r", tolower(files_sources))]
+sapply(paste0(utils, files_sources), source) %>% invisible()
+rm(utils, files_sources)
+
+
+## Read config file. The part of the path before "output/config.json"
+## should exactly match config$path_data.
+config <- jsonlite::fromJSON("/Users/ericjaydaza/Documents/Github/[project_codename]/data/output/config.json")
+str(config)
+
+
 ## Set global parameters.
 scalar_seed <- # optional: specify random number seed for reproducibility
-output_path <- "/LocalPath/data/MyProjectFolder/" # your local path and project folder within the "data" folder
+output_path <- config$path_data # your local path and project folder within the "data" folder
 
 
 ## Load datasets or data image.
@@ -85,7 +104,7 @@ Refer to the study protocol.
 
 # Objective
 
-We want to statistically discern or detect a hypothesized true average difference (i.e., association or effect size) of size $\delta$ or larger in continuous outcomes $Y$ between `r tbl_pss_parameters$num_of_tests` treatment groups. We will assume these outcomes vary with the same standard deviation (SD) $\sigma_Y$ in both groups. These two quantities are often combined as Cohen's $d$, defined as $d = \delta \big/ \sigma_Y$. We will also assume these outcomes are fairly normally distributed, allowing us to rely on Cohen's $d$ and the two-sample t-test in our calculations carried out via the R command `pwr::pwr.t.test()`.
+We want to statistically discern or detect a hypothesized true average difference (i.e., association or effect size) of size $\delta$ or larger in continuous outcomes $Y$ between two treatment groups. We will assume these outcomes vary with the same standard deviation (SD) $\sigma_Y$ at any time point in both groups. These two quantities are often combined as Cohen's $d$, defined as $d = \delta \big/ \sigma_Y$. We will also assume these outcomes are fairly normally distributed, allowing us to rely on Cohen's $d$ and the two-sample t-test in our calculations carried out via the R command `pwr::pwr.t.test()`.
 
 
 
@@ -97,7 +116,7 @@ We want to statistically discern or detect a hypothesized true average differenc
 
 ## Parameters Chosen
 
-The most conservative sample size will be the largest one we anticipate needing. To calculate this, we need to use the smallest hypothesized true average difference between the `r tbl_pss_parameters$num_of_tests` research hypotheses, along with the outcome with the largest SD. Based on our literature review and scientific judgment, we will assume that the smallest true average difference is `r tbl_pss_parameters$delta_primary` units, and that the largest SD of pre- and post-treament outcomes in both groups is `r tbl_pss_parameters$sd_primary`. The same sample size results will apply if the smallest true average difference is `r tbl_pss_parameters$delta_secondary %>% round(2)` units, and the largest SD of pre- and post-treament outcomes in both groups is `r tbl_pss_parameters$sd_secondary`.
+The most conservative sample size will be the largest one we anticipate needing. To calculate this, we need to use the smallest hypothesized true average difference among the `r tbl_pss_parameters$num_of_tests` a priori research hypotheses, along with the outcome with the largest SD. Based on our literature review and scientific judgment, we will assume that the smallest true average difference is `r tbl_pss_parameters$delta_primary` units, and that the largest SD of pre- and post-treament outcomes in both groups is `r tbl_pss_parameters$sd_primary`. The same sample size results will apply if the smallest true average difference is `r tbl_pss_parameters$delta_secondary %>% round(2)` units, and the largest SD of pre- and post-treament outcomes in both groups is `r tbl_pss_parameters$sd_secondary`.
 
 We will conduct `r tbl_pss_parameters$num_of_tests` main statistical hypothesis tests. These correspond to our primary and secondary research hypotheses or endpoints. We will use a Bonferroni correction that equally splits the familywise $\alpha$ among `r tbl_pss_parameters$num_of_tests` tests; i.e., each test's $\alpha$ is equal to $\alpha$/`r tbl_pss_parameters$num_of_tests`.
 
@@ -115,7 +134,7 @@ We will conduct `r tbl_pss_parameters$num_of_tests` main statistical hypothesis 
 
 ## Other Scenarios
 
-The naive Cohen's $d$ (i.e., before adjusting for ICC, or equivalently setting the ICC to 0.5) is `r tbl_pss_parameters$cohens_d_naive %>% round(3)`. The Cohen's $d$ we will use accounts for the ICC, and is equal to $d = \delta \big/ \sqrt{2 \sigma^2 (1 - ICC)}$, where $\sigma^2$ represents the variance of raw outcomes in either group at either pre- or post-treatment (see Appendix).
+The naive Cohen's $d$ (i.e., before adjusting for ICC, or equivalently setting the ICC to 0.5) is `r tbl_pss_parameters$cohens_d_initial %>% round(3)`. The Cohen's $d$ we will use accounts for the ICC, and is equal to $d = \delta \big/ \sqrt{2 \sigma^2 (1 - ICC)}$, where $\sigma^2$ represents the variance of raw outcomes in either group at either pre- or post-treatment (see Appendix).
 
 Here is an example of two extremes of required sample sizes for two-sample tests:
 
@@ -167,7 +186,7 @@ A power analysis is used to characterize the relationship between these six core
 1. statistical properties (i.e., maximum false positive rates (FPRs) or statistical significance levels like $\alpha = 0.05$, statistical power values like $1 - \beta = 0.8$)
 1. sample sizes
 
-A power analysis must characterize the possible scenarios given pre-specified components. The more components are specified, the fewer the scenarios it must characterize. Note that Cohen’s $d$ for equal group sizes is equal to a difference in mean outcomes (for a given outcome) divided by the outcome SD (i.e., #1 divided by #2 for a given outcome).
+A power analysis must characterize the possible scenarios given pre-specified components. The more components are specified, the fewer the scenarios it must characterize. For two-sample tests, note that Cohen’s $d$ for equal group sizes is equal to a difference in mean outcomes (for a given outcome) divided by the outcome SD.
 
 #### ((Text for Confirmatory Studies))
 
@@ -261,6 +280,9 @@ Let $p_{att}$ represent the anticipated proportion of attrition. The minimum lar
 
 ### T-Statistic: Outcome Variance
 
+
+#### Two Groups
+
 Let $X_i = 1$ if participant $i$ is assigned to active treatment, and let $X_i = 0$ if they're assigned to placebo control. For either treatment $x \in {0, 1}$, let $Y_{x,i}$ denote the pre-post difference in outcomes for participant $i$. Let $\mu_x = E(Y_i | X_i=x)$ denote the mean pre-post difference for treatment $x$, which we assume is the same for all participants receiving $x$.
 
 We want to estimate $\delta = \mu_1 - \mu_0$. The empirical average of the mean outcome for each treatment is $\hat\mu_x = \frac{1}{n_x} \sum_{i=1}^{n_x} Y_{x,i}$. Let $\hat\delta = \hat\mu_1 - \hat\mu_0$ denote our $\delta$ estimator.
@@ -280,6 +302,24 @@ Var \left( \hat\delta \right)
   \right) \\
 & = \frac{1}{n_1} Var \left( Y_{1,i} \right) + \frac{1}{n_0} Var \left( Y_{0,i} \right) \\
 & = \left( \frac{1}{n_1} + \frac{1}{n_0} \right) Var(Y)
+\end{aligned}
+\]
+
+
+#### One Group
+
+We want to estimate $\delta = \mu_1$. The empirical average of the mean outcome is $\hat\delta = \hat\mu_1$.
+
+We have:
+\[
+\begin{aligned}
+Var \left( \hat\delta \right)
+& = Var \left( \hat\mu_1 \right) \\
+& = Var \left(
+  \frac{1}{n_1} \sum_{i=1}^{n_1} Y_{1,i}
+  \right) \\
+& = \frac{1}{n_1} Var \left( Y_{1,i} \right) \\
+& = \frac{1}{n_1} Var(Y)
 \end{aligned}
 \]
 
@@ -309,7 +349,7 @@ Var(Y)
 & = Var \left( Y_{post} \right) + Var \left( Y_{pre} \right) - 2 ICC \sqrt{Var \left( Y_{post} \right) Var \left( Y_{pre} \right)}
 \end{aligned}
 \]
-If $Var \left( Y_{post} \right) = Var \left( Y_{pre} \right) \equiv \sigma^2$, this simplifies to $Var(Y) = 2 \sigma^2 - 2 ICC \sigma^2 = 2 \sigma^2 (1 - ICC)$.
+If $Var \left( Y_{post} \right) = Var \left( Y_{pre} \right) \equiv \sigma^2$, this simplifies to $Var(Y) = 2 \sigma^2 - 2 ICC \sigma^2 = 2 \sigma^2 (1 - ICC) = \sigma_Y$.
 
 <!-- #### Relationship between Cronbach's $\alpha$ and ICC -->
 

@@ -1,3 +1,8 @@
+# Calculation Characteristics:
+#   mean known
+#   SD known
+#   ICC known or unknown
+# 
 # Project: [insert project name]
 #   Links: [insert project folder link]
 # 
@@ -16,9 +21,23 @@ if (!require("pacman")) install.packages("pacman") # just to make sure "pacman" 
 pacman::p_load(tidyverse, knitr, ggpubr) # e.g., naniar, extrafont, tidyverse, reshape2, janitor, lubridate, jsonlite, arsenal, knitr, feather
 
 
+## Load custom tools.
+utils <- "/Users/ericjaydaza/Documents/Github/[project_codename]/code/0-utils/"
+files_sources <- list.files(utils)
+files_sources <- files_sources[grepl(".r", tolower(files_sources))]
+sapply(paste0(utils, files_sources), source) %>% invisible()
+rm(utils, files_sources)
+
+
+## Read config file. The part of the path before "output/config.json"
+## should exactly match config$path_data.
+config <- jsonlite::fromJSON("/Users/ericjaydaza/Documents/Github/[project_codename]/data/output/config.json")
+str(config)
+
+
 ## Set global parameters.
 scalar_seed <- # optional: specify random number seed for reproducibility
-output_path <- "/LocalPath/data/MyProjectFolder/" # your local path and project folder within the "data" folder
+output_path <- config$path_data # your local path and project folder within the "data" folder
 
 ### PSS parameters
 delta_primary <- 10 # mean of primary/main objective effect or association size; include literature reference (link if possible) in this comment
@@ -151,25 +170,40 @@ dplyr::tibble(
 ) %>% readr::write_csv(paste0(output_path, "tbl_pss_parameters.csv"))
 
 ### types of tests
-types_of_test <- c("one.sample", "two.sample")
-type_of_test <- c(rep(types_of_test[1], length(alphas_familywise) * length(power_levels)), rep(types_of_test[2], length(alphas_familywise) * length(power_levels)))
-# type_of_test <- c(rep(types_of_test[1], length(alphas_familywise) * length(power_levels) * length(iccs)), rep(types_of_test[2], length(alphas_familywise) * length(power_levels) * length(iccs))) # optional version if using ICCs
+
+# types_of_test <- c("one.sample", "two.sample")
+types_of_test <- c("paired", "one.sample", "two.sample")
+
+# default version if not using ICCs; comment out if using ICCs
+type_of_test <- c(
+  rep(types_of_test[1], length(alphas_familywise) * length(power_levels)),
+  rep(types_of_test[2], length(alphas_familywise) * length(power_levels)),
+  rep(types_of_test[3], length(alphas_familywise) * length(power_levels))
+)
+
+# # optional version if using ICCs; comment out if not using ICCs
+# type_of_test <- c(
+#   rep(types_of_test[1], length(alphas_familywise) * length(power_levels) * length(iccs)),
+#   rep(types_of_test[2], length(alphas_familywise) * length(power_levels) * length(iccs)),
+#   rep(types_of_test[3], length(alphas_familywise) * length(power_levels) * length(iccs))
+# )
 
 
 ## Simulate scenarios by discernibility and power levels.
 tbl_sims_1 <- dplyr::tibble(
   
-  alpha_familywise =  rep(1, length(types_of_test)) %x% alphas_familywise %x% rep(1, length(power_levels)),
-  alpha_per_test = alpha_familywise / num_of_tests,
-  power_level = rep(1, length(types_of_test)) %x% rep(1, length(alphas_familywise)) %x% power_levels,
+  # default version if not using ICCs; comment out if using ICCs
+  alpha_familywise =  rep(1, length(types_of_test)) %x% alphas_familywise %x% rep(1, length(power_levels)) %>% as.numeric(),
+  alpha_per_test = alpha_familywise %>% as.numeric() / num_of_tests,
+  power_level = rep(1, length(types_of_test)) %x% rep(1, length(alphas_familywise)) %x% power_levels %>% as.numeric(),
   cohens_d = delta_primary / sd_primary,
   type_of_test = type_of_test
   
-  # # optional version if using ICCs
-  # alpha_familywise =  rep(1, length(types_of_test)) %x% alphas_familywise %x% rep(1, length(power_levels)) %x% rep(1, length(iccs)),
-  # alpha_per_test = alpha_familywise / num_of_tests,
-  # power_level = rep(1, length(types_of_test)) %x% rep(1, length(alphas_familywise)) %x% power_levels %x% rep(1, length(iccs)),
-  # icc = rep(1, length(types_of_test)) %x% rep(1, length(alphas_familywise)) %x% rep(1, length(power_levels)) %x% iccs,
+  # # optional version if using ICCs; comment out if not using ICCs
+  # alpha_familywise =  rep(1, length(types_of_test)) %x% alphas_familywise %x% rep(1, length(power_levels)) %x% rep(1, length(iccs)) %>% as.numeric(),
+  # alpha_per_test = alpha_familywise %>% as.numeric() / num_of_tests,
+  # power_level = rep(1, length(types_of_test)) %x% rep(1, length(alphas_familywise)) %x% power_levels %x% rep(1, length(iccs)) %>% as.numeric(),
+  # icc = rep(1, length(types_of_test)) %x% rep(1, length(alphas_familywise)) %x% rep(1, length(power_levels)) %x% iccs %>% as.numeric(),
   # cohens_d = delta_primary / sqrt(2 * sd_primary^2 * (1-icc)),
   # type_of_test = type_of_test
   
@@ -179,6 +213,11 @@ tbl_sims_1$sampsize <- apply(
   MARGIN = 1,
   FUN = function(x) pwr::pwr.t.test(
     d = x["cohens_d"] %>% as.numeric,
+    # 
+    # 
+    # IS THE CORRECT VARIANCE FORMULA BEING USED FOR COHENS D FOR TWO SAMPLES?
+    # 
+    # 
     sig.level = x["alpha_per_test"] %>% as.numeric,
     power = x["power_level"] %>% as.numeric,
     type = x["type_of_test"],
@@ -201,7 +240,13 @@ tbl_sims_final %>% readr::write_csv(paste0(output_path, "tbl_sims_final_ntests",
 tbl_sims_fancy <- tbl_sims_final %>%
   dplyr::mutate(
     
-    type_of_test = ifelse(type_of_test == "one.sample", "one-sample", ifelse(type_of_test == "two.sample", "two-sample", NA)),
+    type_of_test = dplyr::case_when(
+      
+      type_of_test == "paired" ~ "paired",
+      type_of_test == "one.sample" ~ "one-sample",
+      type_of_test == "two.sample" ~ "two-sample"
+      
+    ),
     cohens_d = cohens_d %>% round(3)
     
   ) %>%
@@ -236,7 +281,7 @@ tbl_sims_sentences <- tbl_sims_final %>%
   dplyr::mutate(
     
     string_type_of_test = ifelse(
-      type_of_test == "one.sample",
+      type_of_test %in% c("paired", "one.sample"),
       "difference from zero",
       "difference between two groups"
     ),
@@ -250,7 +295,11 @@ tbl_sims_sentences <- tbl_sims_final %>%
       num_of_tests,
       " tests), enrolling ",
       sampsize_attrition,
-      " participants in each treatment arm (with at most ",
+      ifelse(
+        type_of_test %in% c("paired", "one.sample"),
+        " participants (with at most ",
+        " participants in each treatment arm (with at most "
+      ),
       p_attrition * 100,
       "% attrition down to ",
       sampsize,

@@ -1,5 +1,5 @@
 ---
-  title: "Project: MyProjectName" # set to your project name
+title: "Project: [insert project name or codename]: Power and Sample Size Calculations"
 author: "MyFirstName MyLastName, MyCredentials (MyTitle - MyOrganization)" # write your name, credentials, title, and organization here
 date: "`r format(Sys.time(), '%d %B %Y %A')`"
 output: pdf_document
@@ -10,7 +10,14 @@ knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ```{r include=FALSE}
-# Project: stat-sci-support: Power and Sample Size Calculations based on Comparing Expectations
+# Calculation Characteristics:
+#   mean known
+#   SD known
+#   ICC not accounted for
+# 
+# Project: [insert project name]
+#   Links: [insert project folder link]
+# 
 #   Description: Power and sample size justification for common requests with vague research
 #     hypotheses involving comparisons (e.g., one-sample, two-sample) and possible multiple
 #     testing (i.e., multiplicity).
@@ -26,9 +33,23 @@ if (!require("pacman")) install.packages("pacman") # just to make sure "pacman" 
 pacman::p_load(tidyverse, knitr, ggpubr) # e.g., naniar, extrafont, tidyverse, reshape2, janitor, lubridate, jsonlite, arsenal, knitr, feather
 
 
+## Load custom tools.
+utils <- "/Users/ericjaydaza/Documents/Github/[project_codename]/code/0-utils/"
+files_sources <- list.files(utils)
+files_sources <- files_sources[grepl(".r", tolower(files_sources))]
+sapply(paste0(utils, files_sources), source) %>% invisible()
+rm(utils, files_sources)
+
+
+## Read config file. The part of the path before "output/config.json"
+## should exactly match config$path_data.
+config <- jsonlite::fromJSON("/Users/ericjaydaza/Documents/Github/[project_codename]/data/output/config.json")
+str(config)
+
+
 ## Set global parameters.
-scalar_seed <- # e.g., set to your current datetime
-output_path <- "/LocalPath/data/MyProjectFolder/" # your local path and project folder within the "data" folder
+scalar_seed <- # optional: specify random number seed for reproducibility
+output_path <- config$path_data # your local path and project folder within the "data" folder
 
 
 

@@ -1,4 +1,11 @@
-# Project: stat-sci-support: Power and Sample Size Calculations based on Comparing Expectations
+# Calculation Characteristics:
+#   mean known
+#   SD known
+#   ICC not accounted for
+# 
+# Project: [insert project name]
+#   Links: [insert project folder link]
+# 
 #   Description: Power and sample size justification for common requests with vague research
 #     hypotheses involving comparisons (e.g., one-sample, two-sample) and possible multiple
 #     testing (i.e., multiplicity).
@@ -14,9 +21,27 @@ if (!require("pacman")) install.packages("pacman") # just to make sure "pacman" 
 pacman::p_load(tidyverse, knitr, ggpubr) # e.g., naniar, extrafont, tidyverse, reshape2, janitor, lubridate, jsonlite, arsenal, knitr, feather
 
 
+## Load custom tools.
+utils <- "/Users/ericjaydaza/Documents/Github/[project_codename]/code/0-utils/"
+files_sources <- list.files(utils)
+files_sources <- files_sources[grepl(".r", tolower(files_sources))]
+sapply(paste0(utils, files_sources), source) %>% invisible()
+rm(utils, files_sources)
+
+
+## Read config file. The part of the path before "output/config.json"
+## should exactly match config$path_data.
+config <- jsonlite::fromJSON("/Users/ericjaydaza/Documents/Github/[project_codename]/data/output/config.json")
+str(config)
+
+
 ## Set global parameters.
-scalar_seed <- # e.g., set to your current datetime
-output_path <- "/LocalPath/data/MyProjectFolder/" # your local path and project folder within the "data" folder
+scalar_seed <- # optional: specify random number seed for reproducibility
+output_path <- config$path_data # your local path and project folder within the "data" folder
+
+### PSS parameters
+delta_primary <- 10 # mean of primary/main objective effect or association size; include literature reference (link if possible) in this comment
+sd_primary <- 5 # standard deviation of primary/main objective effect or association; include literature reference (link if possible) in this comment
 
 
 
@@ -26,8 +51,8 @@ num_of_tests <- 50 # set as needed, but use same sampsize_n for all values used;
 
 tbl_sims_1 <- dplyr::tibble(
   
-  sig_level = rep(1, 2) %x% c(0.05, 0.01, 0.001) %x% rep(1, 2) / num_of_tests,
-  power_value = rep(1, 2) %x% rep(1, 3) %x% c(0.90, 0.99),
+  sig_level = rep(1, 2) %x% c(0.05, 0.01, 0.001) %x% rep(1, 2) %>% as.numeric() / num_of_tests,
+  power_value = rep(1, 2) %x% rep(1, 3) %x% c(0.90, 0.99) %>% as.numeric(),
   one_two_sample = c(rep("one.sample", 6), rep("two.sample", 6)),
   sampsize = c(rep(sampsize_n, 6), rep(sampsize_n / 2, 6)),
   sampsize_n = sampsize_n,
@@ -48,16 +73,16 @@ tbl_sims_1$cohens_d <- apply(
 tbl_sims_2 <- tbl_sims_1 %>%
   dplyr::mutate(
     
-    fixed_association_size = 10,
-    needed_sd = fixed_association_size / cohens_d
+    delta_primary = 10,
+    needed_sd = delta_primary / cohens_d
     
   )
 tbl_sims_3 <- tbl_sims_2 %>%
   dplyr::mutate(
     
-    # fixed_sd = median(tbl_sims_2$needed_sd),
-    fixed_sd = 50,
-    needed_association_size = cohens_d * fixed_sd,
+    # sd_primary = median(tbl_sims_2$needed_sd),
+    sd_primary = sd_primary,
+    needed_association_size = cohens_d * sd_primary,
     Scenario = seq(1:nrow(tbl_sims_2))
     
   )
@@ -81,13 +106,13 @@ tbl_sims_fancy <- tbl_sims_final %>%
       "% chance of detecting an average ",
       string_one_two_sample,
       " of at least ",
-      round(fixed_association_size, 2),
+      round(delta_primary, 2),
       " or greater with an outcome SD of ",
       round(needed_sd, 2),
       ", or a difference of at least ",
       round(needed_association_size, 2),
       " or greater with an outcome SD of ",
-      round(fixed_sd, 2),
+      round(sd_primary, 2),
       "."
     )
   ) %>%
@@ -111,6 +136,7 @@ plotScenario <- function(
   i <- Scenario
   
   set.seed(scalar_seed + i)
+  
   title_touse <- paste0(
     # ifelse(tbl_sims_final$one_two_sample[i] == "one.sample", "One Sample: ", "Two Samples: "),
     "Scenario ",
@@ -121,33 +147,36 @@ plotScenario <- function(
     tbl_sims_final$power_value[i] * 100,
     "%"
   )
+  
   tbl_plot <- dplyr::tibble(
     
-    association_size = c(
+    delta = c(
       rep(
-        round(tbl_sims_final$fixed_association_size[i], 2),
+        round(tbl_sims_final$delta_primary[i], 2),
         sampsize_n
       ),
       rep(
-        round(tbl_sims_final$needed_association_size[i], 2),
+        round(tbl_sims_final$needed_delta[i], 2),
         sampsize_n
       )
     ),
+    
     sd = c(
       rep(
         round(tbl_sims_final$needed_sd[i], 2),
         sampsize_n
       ),
       rep(
-        round(tbl_sims_final$fixed_sd[i], 2),
+        round(tbl_sims_final$sd_primary[i], 2),
         sampsize_n
       )
     ),
+    
     x = c(
       rep(
         paste0(
-          "Avg. Diff. = ",
-          round(tbl_sims_final$fixed_association_size[i], 2),
+          "Delta = ",
+          round(tbl_sims_final$delta_primary[i], 2),
           ", SD = ",
           round(tbl_sims_final$needed_sd[i], 2)
         ),
@@ -155,39 +184,126 @@ plotScenario <- function(
       ),
       rep(
         paste0(
-          "Avg. Diff. = ",
-          round(tbl_sims_final$needed_association_size[i], 2),
+          "Delta = ",
+          round(tbl_sims_final$needed_delta[i], 2),
           ", SD = ",
-          round(tbl_sims_final$fixed_sd[i], 2)
+          round(tbl_sims_final$sd_primary[i], 2)
         ),
         sampsize_n
       )
     ) %>% factor,
+    
+    # If one.sample, simulate all sampsize_n points with same
+    # parameters. Otherwise, simulate first ceiling(sampsize_n / 2)
+    # points with mean = 0, and second floor(sampsize_n / 2) points
+    # with mean = delta_primary[i].
+    
     y = c(
-      rnorm(n = sampsize_n / 2, ifelse(tbl_sims_final$one_two_sample[i] == "one.sample", tbl_sims_final$fixed_association_size[i], 0), tbl_sims_final$needed_sd[i]),
-      rnorm(n = sampsize_n / 2, tbl_sims_final$fixed_association_size[i], tbl_sims_final$needed_sd[i]),
-      rnorm(n = sampsize_n / 2, ifelse(tbl_sims_final$one_two_sample[i] == "one.sample", tbl_sims_final$needed_association_size[i], 0), tbl_sims_final$fixed_sd[i]),
-      rnorm(n = sampsize_n / 2, tbl_sims_final$needed_association_size[i], tbl_sims_final$fixed_sd[i])
+      rnorm(
+        n = ceiling(sampsize_n / 2),
+        ifelse(
+          tbl_sims_final$one_two_sample[i] == "one.sample",
+          tbl_sims_final$delta_primary[i],
+          0
+        ),
+        tbl_sims_final$needed_sd[i]
+      ),
+      rnorm(
+        n = floor(sampsize_n / 2),
+        tbl_sims_final$delta_primary[i],
+        tbl_sims_final$needed_sd[i]
+      ),
+      rnorm(
+        n = ceiling(sampsize_n / 2),
+        ifelse(
+          tbl_sims_final$one_two_sample[i] == "one.sample",
+          tbl_sims_final$needed_delta[i],
+          0
+        ),
+        tbl_sims_final$sd_primary[i]
+      ),
+      rnorm(
+        n = floor(sampsize_n / 2),
+        tbl_sims_final$needed_delta[i],
+        tbl_sims_final$sd_primary[i]
+      )
     ),
+    
     mean = c(
-      rep(round(ifelse(tbl_sims_final$one_two_sample[i] == "one.sample", tbl_sims_final$fixed_association_size[i], 0), 2), sampsize_n / 2),
-      rep(round(tbl_sims_final$fixed_association_size[i], 2), sampsize_n / 2),
-      rep(round(ifelse(tbl_sims_final$one_two_sample[i] == "one.sample", tbl_sims_final$needed_association_size[i], 0), 2), sampsize_n / 2),
-      rep(round(tbl_sims_final$needed_association_size[i], 2), sampsize_n / 2)
+      rep(
+        round(
+          ifelse(
+            tbl_sims_final$one_two_sample[i] == "one.sample",
+            tbl_sims_final$delta_primary[i],
+            0
+          ),
+          2
+        ),
+        ceiling(sampsize_n / 2)
+      ),
+      rep(
+        round(tbl_sims_final$delta_primary[i], 2),
+        floor(sampsize_n / 2)
+      ),
+      rep(
+        round(
+          ifelse(
+            tbl_sims_final$one_two_sample[i] == "one.sample",
+            tbl_sims_final$needed_delta[i],
+            0
+          ),
+          2
+        ),
+        ceiling(sampsize_n / 2)
+      ),
+      rep(
+        round(tbl_sims_final$needed_delta[i], 2),
+        floor(sampsize_n / 2)
+      )
     ),
+    
     Group = c(
-      rep(ifelse(tbl_sims_final$one_two_sample[i] == "one.sample", paste0("n = ", sampsize_n), paste0("A (n = ", sampsize_n / 2, ")")), sampsize_n / 2),
-      rep(ifelse(tbl_sims_final$one_two_sample[i] == "one.sample", paste0("n = ", sampsize_n), paste0("B (n = ", sampsize_n / 2, ")")), sampsize_n / 2),
-      rep(ifelse(tbl_sims_final$one_two_sample[i] == "one.sample", paste0("n = ", sampsize_n), paste0("A (n = ", sampsize_n / 2, ")")), sampsize_n / 2),
-      rep(ifelse(tbl_sims_final$one_two_sample[i] == "one.sample", paste0("n = ", sampsize_n), paste0("B (n = ", sampsize_n / 2, ")")), sampsize_n / 2)
+      rep(
+        ifelse(
+          tbl_sims_final$one_two_sample[i] == "one.sample",
+          paste0("n = ", sampsize_n),
+          paste0("A (n = ", ceiling(sampsize_n / 2), ")")
+        ),
+        ceiling(sampsize_n / 2)
+      ),
+      rep(
+        ifelse(
+          tbl_sims_final$one_two_sample[i] == "one.sample",
+          paste0("n = ", sampsize_n),
+          paste0("B (n = ", floor(sampsize_n / 2), ")")
+        ),
+        floor(sampsize_n / 2)
+      ),
+      rep(
+        ifelse(
+          tbl_sims_final$one_two_sample[i] == "one.sample",
+          paste0("n = ", sampsize_n),
+          paste0("A (n = ", ceiling(sampsize_n / 2), ")")
+        ),
+        ceiling(sampsize_n / 2)
+      ),
+      rep(
+        ifelse(
+          tbl_sims_final$one_two_sample[i] == "one.sample",
+          paste0("n = ", sampsize_n),
+          paste0("B (n = ", floor(sampsize_n / 2), ")")
+        ),
+        floor(sampsize_n / 2)
+      )
     )
     
   )
+  
   tbl_plot$x <- relevel(
     tbl_plot$x,
     paste0(
-      "Avg. Diff. = ",
-      round(tbl_sims_final$fixed_association_size[i], 2),
+      "Delta = ",
+      round(tbl_sims_final$delta_primary[i], 2),
       ", SD = ",
       round(tbl_sims_final$needed_sd[i], 2)
     )

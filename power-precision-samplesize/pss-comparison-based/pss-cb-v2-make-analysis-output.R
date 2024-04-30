@@ -51,77 +51,6 @@ delta_secondary <- # optional
 # Simulate data.
 
 
-# ## Cohen's d formulation vs. straight up t-test.
-# ## (This is didactic code. Keep for testing and reference, but comment out. No need to run.)
-# 
-# pwr::pwr.t.test(
-#   d = 10 / 3,
-#   sig.level = 0.05,
-#   power = 0.8,
-#   type = "one.sample",
-#   alternative = "two.sided"
-# )
-# power.t.test(
-#   delta = 10,
-#   sd = 3,
-#   sig.level = 0.05,
-#   power = 0.8,
-#   type = "one.sample",
-#   alternative = "two.sided"
-# )
-# 
-# pwr::pwr.t.test(
-#   d = 10 / 3,
-#   sig.level = 0.05,
-#   power = 0.8,
-#   type = "two.sample",
-#   alternative = "two.sided"
-# )
-# power.t.test(
-#   delta = 10,
-#   sd = 3,
-#   sig.level = 0.05,
-#   power = 0.8,
-#   type = "two.sample",
-#   alternative = "two.sided"
-# )
-# 
-# pwr::pwr.t.test(
-#   n = 3,
-#   sig.level = 0.05,
-#   power = 0.8,
-#   type = "one.sample",
-#   alternative = "two.sided"
-# )
-# power.t.test(
-#   n = 3,
-#   sig.level = 0.05,
-#   power = 0.8,
-#   type = "one.sample",
-#   alternative = "two.sided"
-# )
-# 
-# ### FINDING: Same within small rounding error.
-# 
-# ## Does changing group size help?
-# test_n1 <- 10
-# test_n2 <- pwr::pwr.t2n.test(
-#   d = 1.5,
-#   n1 = test_n1,
-#   sig.level = 0.01,
-#   power = 0.9,
-#   alternative = "two.sided"
-# )$n2
-# test_n2
-# pwr::pwr.t.test(
-#   n = (test_n1 + test_n2)/2,
-#   sig.level = 0.01,
-#   power = 0.9,
-#   type = "two.sample",
-#   alternative = "two.sided"
-# )
-
-
 ## Set parameters.
 
 ### Calculate correct SD of the difference between correlated pre-post outcomes
@@ -196,6 +125,8 @@ tbl_sims_1 <- dplyr::tibble(
   alpha_familywise =  rep(1, length(types_of_test)) %x% alphas_familywise %x% rep(1, length(power_levels)) %>% as.numeric(),
   alpha_per_test = alpha_familywise %>% as.numeric() / num_of_tests,
   power_level = rep(1, length(types_of_test)) %x% rep(1, length(alphas_familywise)) %x% power_levels %>% as.numeric(),
+  delta_primary = delta_primary,
+  sd_primary = sd_primary,
   cohens_d = delta_primary / sd_primary,
   type_of_test = type_of_test
   
@@ -204,6 +135,8 @@ tbl_sims_1 <- dplyr::tibble(
   # alpha_per_test = alpha_familywise %>% as.numeric() / num_of_tests,
   # power_level = rep(1, length(types_of_test)) %x% rep(1, length(alphas_familywise)) %x% power_levels %x% rep(1, length(iccs)) %>% as.numeric(),
   # icc = rep(1, length(types_of_test)) %x% rep(1, length(alphas_familywise)) %x% rep(1, length(power_levels)) %x% iccs %>% as.numeric(),
+  # delta_primary = delta_primary,
+  # sd_primary = sd_primary,
   # cohens_d = delta_primary / sqrt(2 * sd_primary^2 * (1-icc)),
   # type_of_test = type_of_test
   
@@ -211,14 +144,11 @@ tbl_sims_1 <- dplyr::tibble(
 tbl_sims_1$sampsize <- apply(
   X = tbl_sims_1,
   MARGIN = 1,
-  FUN = function(x) pwr::pwr.t.test(
-    d = x["cohens_d"] %>% as.numeric,
-    # 
-    # 
-    # IS THE CORRECT VARIANCE FORMULA BEING USED FOR COHENS D FOR TWO SAMPLES?
-    # 
-    # 
-    sig.level = x["alpha_per_test"] %>% as.numeric,
+  # FUN = function(x) pwr::pwr.t.test(
+  #   d = x["cohens_d"] %>% as.numeric,
+  FUN = function(x) stats::power.t.test(
+    delta = x["delta_primary"] %>% as.numeric,
+    sd = x["sd_primary"] %>% as.numeric,
     power = x["power_level"] %>% as.numeric,
     type = x["type_of_test"],
     alternative = "two.sided"
@@ -247,6 +177,8 @@ tbl_sims_fancy <- tbl_sims_final %>%
       type_of_test == "two.sample" ~ "two-sample"
       
     ),
+    delta_primary = delta_primary %>% round(3),
+    sd_primary = sd_primary %>% round(3),
     cohens_d = cohens_d %>% round(3)
     
   ) %>%
@@ -257,6 +189,8 @@ tbl_sims_fancy <- tbl_sims_final %>%
     alpha_per_test,
     power_level,
     # icc, # optional
+    delta_primary,
+    sd_primary,
     cohens_d,
     sampsize,
     sampsize_attrition
@@ -267,6 +201,8 @@ tbl_sims_fancy <- tbl_sims_final %>%
     `Per-test FPR` = alpha_per_test,
     Power = power_level,
     # ICC = icc, # optional
+    Delta = delta_primary,
+    SD = sd_primary,
     `Cohen's d` = cohens_d,
     `Sample Size` = sampsize,
     `Samp. Size (Att.-Adj.)` = sampsize_attrition

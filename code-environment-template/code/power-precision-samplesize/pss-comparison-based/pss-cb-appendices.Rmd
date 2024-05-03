@@ -1,5 +1,5 @@
 ---
-title: "Project: Quesera: Power and Sample Size Calculations for One Group"
+title: "Project: [insert project name or codename]: Power and Sample Size Calculations based on Comparisons"
 author: "[Eric J. Daza, DrPH, MPS](https://www.ericjdaza.com/)"
 date: "`r Sys.Date()`"
 output:
@@ -119,7 +119,7 @@ The outcome of interest is a change or difference between pre- and post-treatmen
 
 We must account for the ICC in our power and sample size (PSS) calculations. The good news is that this actually can reduce the sample size we'll need!
   
-  Let $\sigma^2$ represent the variance of raw outcomes at either pre- or post-treatment. Then the SD of the pre-post difference $Y$ is $\sigma_Y = \sqrt{2 \sigma^2 (1 - ICC)}$ (see **Appendix: Repeated Measures**). From this, we see that the higher the positive ICC, the lower the variance of the pre-post difference. This lowers the sample size we'd need if $ICC > 0.5$. Specifically, if $ICC = 0.5$, then the variance we'd specify in our PSS calculations is simply $\sigma^2$, the variance of outcomes at either pre or post period.
+Let $\sigma^2$ represent the variance of raw outcomes at either pre- or post-treatment. Then the SD of the pre-post difference $Y$ is $\sigma_Y = \sqrt{2 \sigma^2 (1 - ICC)}$ (see **Appendix: Repeated Measures**). From this, we see that the higher the positive ICC, the lower the variance of the pre-post difference. This lowers the sample size we'd need if $ICC > 0.5$. Specifically, if $ICC = 0.5$, then the variance we'd specify in our PSS calculations is simply $\sigma^2$, the variance of outcomes at either pre or post period.
 
 #### Anticipated Attrition
 
@@ -139,19 +139,19 @@ Let $p_{att}$ represent the anticipated proportion of attrition. The minimum lar
 
 #### Two Groups
 
-Let $X_i = 1$ if participant $i$ is assigned to active treatment, and let $X_i = 0$ if they're assigned to placebo control. For either treatment $x \in {0, 1}$, let $Y_{x,i}$ denote the pre-post difference in outcomes for participant $i$. Let $\mu_x = E(Y_i | X_i=x)$ denote the mean pre-post difference for treatment $x$, which we assume is the same for all participants receiving $x$.
+Let $X_i = 1$ if participant $i$ is assigned to active treatment, and let $X_i = 0$ if they're assigned to placebo control. For either treatment $x \in {0, 1}$, let $Y_{x,i}$ denote the pre-post difference in outcomes for participant $i$. Let $\mu_{Y(x)} = E(Y_i | X_i=x)$ denote the mean pre-post difference for treatment $x$, which we assume is the same for all participants receiving $x$.
 
-We want to estimate $\delta = \mu_1 - \mu_0$. The empirical average of the mean outcome for each treatment is $\hat\mu_x = \frac{1}{n_x} \sum_{i=1}^{n_x} Y_{x,i}$. Let $\hat\delta = \hat\mu_1 - \hat\mu_0$ denote our $\delta$ estimator.
+We want to estimate $\delta = \mu_{Y(1)} - \mu_{Y(0)}$. The empirical average of the pre-post differences for each treatment is $\hat\mu_{Y(x)} = \frac{1}{n_x} \sum_{i=1}^{n_x} Y_{x,i}$. Let $\hat\delta = \hat\mu_{Y(1)} - \hat\mu_{Y(0)}$ denote our $\delta$ estimator.
 
-The t-statistic we need to do our PSS calculations requires specifying both $\delta$ and $Var \left( \hat\delta \right)$. We assume the pre-post difference has the same variance no matter the treatment; i.e., we assume $Var \left( Y_{1,i} \right) = Var \left( Y_{0,i} \right) = Var(Y)$ for any participant $i$.
+The t-statistic we need to do our PSS calculations requires specifying both $E \big( \hat\delta \big) = \delta$ and $Var \big( \hat\delta \big)$. We assume the pre-post difference has the same variance no matter the treatment; i.e., we assume $Var \left( Y_{1,i} \right) = Var \left( Y_{0,i} \right) = Var(Y)$ for any participant $i$.
 
-Note that we actually specify two $\delta$'s for PSS calculations; the null hypothesis $\delta_{null} = 0$ and the alternative hypothesis $\delta_{alt} \ne 0$, which we set to our effect size of interest. We will assume $Var \left( \hat\delta_{null} \right) = Var \left( \hat\delta_{alt} \right) = Var \left( \hat\delta \right)$.
+Note that we actually specify two $\delta$'s for PSS calculations; the null hypothesis $\delta_{null} = 0$ and the alternative hypothesis $\delta_{alt} \ne 0$, which we set to our effect size of interest. We will assume $Var \left( \hat\delta_{null} \right) = Var \left( \hat\delta_{alt} \right) = Var \big( \hat\delta \big)$.
 
 We have:
   \[
     \begin{aligned}
-    Var \left( \hat\delta \right)
-    & = Var \left( \hat\mu_1 - \hat\mu_0 \right) \\
+    Var \big( \hat\delta \big)
+    & = Var \left( \hat\mu_{Y(1)} - \hat\mu_{Y(0)} \right) \\
     & = Var \left(
       \frac{1}{n_1} \sum_{i=1}^{n_1} Y_{1,i} -
         \frac{1}{n_0} \sum_{i=1}^{n_0} Y_{0,i}
@@ -164,13 +164,13 @@ We have:
 
 #### One Group
 
-We want to estimate $\delta = \mu_1$. The empirical average of the mean outcome is $\hat\delta = \hat\mu_1$.
+We want to estimate $\delta = \mu_{Y(1)}$. The empirical average of the pre-post differences is $\hat\delta = \hat\mu_{Y(1)}$.
 
 We have:
   \[
     \begin{aligned}
-    Var \left( \hat\delta \right)
-    & = Var \left( \hat\mu_1 \right) \\
+    Var \big( \hat\delta \big)
+    & = Var \left( \hat\mu_{Y(1)} \right) \\
     & = Var \left(
       \frac{1}{n_1} \sum_{i=1}^{n_1} Y_{1,i}
       \right) \\
@@ -249,6 +249,38 @@ d_1
 \]
 
 
+
+## Transforming and Analyzing Skewed Variables
+
+Many variables such as lab analytes range over non-negative values, and are skewed in distribution. Suppose we want to conduct a PSS calculation that assumes the relevant variable is normally distributed. For such skewed variables, the original variable must first be transformed from its natural or native scale.
+
+The transformed variable should have moments (i.e., means, standard deviations, etc.) that we can reasonably assume [map to non-parametric summaries](https://en.wikipedia.org/wiki/Log-normal_distribution#Mode,_median,_quantiles) of the original variable (i.e., quantiles, interquartile range [IQR], etc.). This makes it easier to translate natural-scale non-parametric summaries found in the literature to the transformed-variable moments required for PSS calculations.
+
+
+### Log-Normal Distribution
+
+Suppose $V$ is log-normally distributed. Then equivalently, $Y = \ln( V )$ is normally distributed as $N ( \mu, \sigma )$ with mean $\mu$ and standard deviation $\sigma$. We have the mean and median of $V$, $\mu_V = \exp \big( \mu + \frac{1}{2} \sigma^2 \big)$ and $\text{med}_V = \exp ( \mu )$, respectively. The median of $V$ is equal to its geometric mean.
+
+The quantile function of $V$ for quantile or percentile value $p \in (0, 1)$ is $q_V ( p ) = \exp \big( \mu + \sigma \Phi^{-1} (p) \big)$, where $\Phi(z)$ represents the standard normal $N (0, 1)$ cumulative distribution function of $Z$ at $z$. Equivalently:
+
+\begin{align*}
+  \mu & = \ln q_V ( p ) - \sigma \Phi^{-1} (p) \\
+  \sigma & = \frac{ \ln q_V ( p ) - \mu }{ \Phi^{-1} (p) }
+\end{align*}
+
+The standard deviation $\sigma$ in terms of a given quantile $p$, $V$-quantile value $q_V ( p )$, and $\text{med}_V$ is:
+
+\begin{align*}
+  q_V ( p ) & = \exp \left( \mu + \sigma \Phi^{-1} (p) \right) \\
+  q_V ( p ) & = \exp ( \mu ) \exp \left( \sigma \Phi^{-1} (p) \right) \\
+  q_V ( p ) & = \text{med}_V \exp \left( \sigma \Phi^{-1} (p) \right) \\
+  \frac{ q_V ( p ) }{\text{med}_V} & = \exp \left( \sigma \Phi^{-1} (p) \right) \\
+  \ln \left( \frac{ q_V ( p ) }{\text{med}_V} \right) & = \sigma \Phi^{-1} (p) \\
+  \ln \left( \frac{ q_V ( p ) }{\text{med}_V} \right) \frac{1}{\Phi^{-1} (p)} & = \sigma
+\end{align*}
+
+
+
 ## Why and How to Drop the Phrase "Statistical Significance"
 
 From above, notice that statistical significance strictly applies to p-values, not estimates. So phrases like "there was a statistically significant difference" are ill-defined. Such phrases are also scientifically disingenuous because they are often interpreted as "there was a significant or scientifically important difference". However, there is nothing in the definition of statistical significance about significance (unqualified) or scientific importance.
@@ -261,9 +293,7 @@ In general, I highly recommend citing [McShane et al (2019)](https://amstat.tand
 
 
 
-
-
-# References
+## References
 
 - Eldridge SM, Ukoumunne OC, Carlin JB. The intra‐cluster correlation coefficient in cluster randomized trials: a review of definitions. International Statistical Review. 2009 Dec;77(3):378-94. [onlinelibrary.wiley.com/doi/abs/10.1111/j.1751-5823.2009.00092.x](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1751-5823.2009.00092.x)
 
@@ -279,9 +309,7 @@ In general, I highly recommend citing [McShane et al (2019)](https://amstat.tand
 
 
 
-
-
-# ((INTERNAL USE ONLY)) Learnings: Process Lessons Learned ((optional but recommended))
+## ((INTERNAL USE ONLY)) Learnings: Process Lessons Learned ((optional but recommended))
 
 Add lessons learned here. Examples include things that add time to doing these calculations, like:
   - parameters (e.g., means, standard deviations) having to be derived from the literature because they aren't reported explicitly, with explanations and justifications for why your derivations are reasonable

@@ -164,17 +164,17 @@ We have:
 
 #### One Group
 
-We want to estimate $\delta = \mu_{Y(1)}$. The empirical average of the pre-post differences is $\hat\delta = \hat\mu_{Y(1)}$.
+We want to estimate $\delta = \mu_{Y(1)} \equiv \mu_Y$. The empirical average of the pre-post differences is $\hat\delta = \hat\mu_Y$.
 
 We have:
   \[
     \begin{aligned}
     Var \big( \hat\delta \big)
-    & = Var \left( \hat\mu_{Y(1)} \right) \\
+    & = Var \left( \hat\mu_Y \right) \\
     & = Var \left(
-      \frac{1}{n_1} \sum_{i=1}^{n_1} Y_{1,i}
+      \frac{1}{n_1} \sum_{i=1}^{n_1} Y_i
       \right) \\
-    & = \frac{1}{n_1} Var \left( Y_{1,i} \right) \\
+    & = \frac{1}{n_1} Var \left( Y_i \right) \\
     & = \frac{1}{n_1} Var(Y)
     \end{aligned}
     \]
@@ -183,12 +183,11 @@ We have:
 ### Intraclass Correlation
 
 The t-statistic variance formula has been straightforward so far. But what is the formula for $Var(Y)$?
-  
-  Let $Y_{x,i,pre}$ and $Y_{x,i,post}$ denote the two sequential measures per participant during the pre and post periods, respectively. Then the per-participant difference is $Y_{x,i} = Y_{x,i,post} - Y_{x,i,pre}$, yielding $Var(Y) = Var \left( Y_{post} - Y_{pre} \right)$. Recall that
+
+Let $Y_{x,i,t}$ denote the outcome per participant at either the $t = pre$ or $t = post$ period of observation. Then the per-participant difference is $Y_{x,i} = Y_{x,i,post} - Y_{x,i,pre}$, yielding $Var(Y) = Var \left( Y_{post} - Y_{pre} \right)$. Recall that
 \[
-  ICC = \frac{Cov \left( Y_{post}, Y_{pre} \right)}{\sqrt{Var \left( Y_{post} \right) Var \left( Y_{pre} \right)}}
-  ,
-  \]
+  ICC = \frac{Cov \left( Y_{post}, Y_{pre} \right)}{\sqrt{Var \left( Y_{post} \right) Var \left( Y_{pre} \right)}},
+\]
 as in equation (2) of Eldridge et al (2009) (i.e., the [standard definition of correlation](https://en.wikipedia.org/wiki/Correlation_and_dependence)). Here, we make what Eldridge et al call the "common correlation, compound symmetry, or exchangeability assumption", as defined in Liang and Zeger (1986).
 
 We have:
@@ -259,9 +258,9 @@ The transformed variable should have moments (i.e., means, standard deviations, 
 
 ### Log-Normal Distribution
 
-Suppose $V$ is log-normally distributed. Then equivalently, $Y = \ln( V )$ is normally distributed as $N ( \mu, \sigma )$ with mean $\mu$ and standard deviation $\sigma$. We have the mean and median of $V$, $\mu_V = \exp \big( \mu + \frac{1}{2} \sigma^2 \big)$ and $\text{med}_V = \exp ( \mu )$, respectively. The median of $V$ is equal to its geometric mean.
+Suppose $V_t$ follows a log-normal distribution. Then equivalently, $Y_t = \ln( V_t )$ is normally distributed as $N ( \mu_t, \sigma_t )$ at any $t$, with mean $\mu_t$ and standard deviation $\sigma_t$. We have the mean and median of $V_t$, $\mu_{V_t} = \exp \big( \mu_t + \frac{1}{2} \sigma_t^2 \big)$ and $\text{med}_{V_t} = \exp ( \mu_t )$, respectively. The median of $V_t$ is equal to its geometric mean.
 
-The quantile function of $V$ for quantile or percentile value $p \in (0, 1)$ is $q_V ( p ) = \exp \big( \mu + \sigma \Phi^{-1} (p) \big)$, where $\Phi(z)$ represents the standard normal $N (0, 1)$ cumulative distribution function of $Z$ at $z$. Equivalently:
+For now, suppress the $t$ index. The quantile function of $V$ for quantile or percentile value $p \in (0, 1)$ is $q_V ( p ) = \exp \big( \mu + \sigma \Phi^{-1} (p) \big)$, where $\Phi(z)$ represents the standard normal $N (0, 1)$ cumulative distribution function of $Z$ at $z$. Equivalently:
 
 \begin{align*}
   \mu & = \ln q_V ( p ) - \sigma \Phi^{-1} (p) \\
@@ -278,6 +277,19 @@ The standard deviation $\sigma$ in terms of a given quantile $p$, $V$-quantile v
   \ln \left( \frac{ q_V ( p ) }{\text{med}_V} \right) & = \sigma \Phi^{-1} (p) \\
   \ln \left( \frac{ q_V ( p ) }{\text{med}_V} \right) \frac{1}{\Phi^{-1} (p)} & = \sigma
 \end{align*}
+
+Let us now re-introduce the $t$ index. Suppose the pre-post mean difference in original values, denoted $V = V_{post} - V_{pre}$, follows a log-normal distribution. Then equivalently, $Y = \ln( V )$ is normally distributed as $N ( \mu_Y, \sigma_Y )$, with mean $\mu_Y$ and standard deviation $\sigma_Y$. We have the mean and median of $V$, $\mu_V = \exp \big( \mu_Y + \frac{1}{2} \sigma_Y^2 \big)$ and $\text{med}_V = \exp ( \mu_Y )$, respectively. The median of $V$ is equal to its geometric mean.
+
+Equivalently:
+
+\begin{align*}
+  q_V ( p ) & = \exp \left( \mu_Y + \sigma_Y \Phi^{-1} (p) \right) \\
+  \mu_Y & = \ln q_V ( p ) - \sigma_Y \Phi^{-1} (p) \\
+  \sigma_Y & = \frac{ \ln q_V ( p ) - \mu_Y }{ \Phi^{-1} (p) } \\
+  & = \ln \left( \frac{ q_V ( p ) }{\text{med}_V} \right) \frac{1}{\Phi^{-1} (p)}
+\end{align*}
+
+Let $\text{diff}_{\text{med}} = \text{med}_{V_{post}} - \text{med}_{V_{pre}}$ denote the difference between the median original variable $V$ at $t = post$ versus $t = pre$. Suppose this difference in medians $\text{diff}_{\text{med}}$ is equal to the median pre-post difference $\text{med}_V$; i.e., suppose $\text{diff}_{\text{med}} = \text{med}_V$. Then the corresponding mean of the transformed pre-post differences is $\mu_Y = \ln \text{diff}_{\text{med}}$. Recall that for one group of participants, $\mu_Y = \delta$.
 
 
 

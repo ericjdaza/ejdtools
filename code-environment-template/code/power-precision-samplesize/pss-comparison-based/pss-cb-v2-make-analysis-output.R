@@ -197,15 +197,17 @@ tbl_sims_fancy <- tbl_sims_final %>%
   ) %>%
   dplyr::rename(
     `Type of Test` = type_of_test,
-    `Fam. FPR` = alpha_familywise,
-    `Per-test FPR` = alpha_per_test,
+    # `Fam. FPR $\\alpha$` = alpha_familywise,
+      `FPR $\\alpha$` = alpha_familywise,
+    # `Per-test $\\alpha$` = alpha_per_test,
     Power = power_level,
-    # ICC = icc, # optional
-    Delta = delta_primary,
-    SD = sd_primary,
-    `Cohen's d` = cohens_d,
-    `Sample Size` = sampsize,
-    `Samp. Size (Att.-Adj.)` = sampsize_attrition
+    ICC = icc, # optional
+    # Delta = delta_primary,
+    # SD = sd_primary,
+    `$\\sigma_Y$` = sigmaY,
+    # `Cohen's d` = cohens_d,
+    `Sample Size n` = sampsize,
+    `Attrition-Adjusted n` = sampsize_attrition
   )
 
 ### Export.
@@ -221,15 +223,31 @@ tbl_sims_sentences <- tbl_sims_final %>%
       "difference from zero",
       "difference between two groups"
     ),
+    
+    alpha_chunk = dplyr::case_when(
+      
+      num_of_tests == 1 ~ paste0(
+        (1 - alpha_familywise) * 100,
+        "% confidence (i.e., FPR or statistical significance level of ",
+        alpha_familywise,
+        "), enrolling "
+      ),
+      
+      num_of_tests > 1 ~ paste0(
+        (1 - alpha_per_test) * 100,
+        "% confidence (i.e., FPR or statistical significance level of ",
+        # alpha_per_test / num_of_tests, # this seems to have been incorrect from 2 Oct 2021
+        alpha_per_test,
+        " for each of ",
+        num_of_tests,
+        " tests), enrolling "
+      )
+      
+    ),
+    
     Description = paste0(
       "With ",
-      (1 - alpha_per_test) * 100,
-      "% confidence (corresponding to a max false-positive rate of ",
-      # alpha_per_test / num_of_tests, # this seems to have been incorrect from 2 Oct 2021
-      alpha_per_test,
-      " for each of ",
-      num_of_tests,
-      " tests), enrolling ",
+      alpha_chunk,
       sampsize_attrition,
       ifelse(
         type_of_test %in% c("paired", "one.sample"),
@@ -237,22 +255,22 @@ tbl_sims_sentences <- tbl_sims_final %>%
         " participants in each treatment arm (with at most "
       ),
       p_attrition * 100,
-      "% attrition down to ",
+      "% attrition to ",
       sampsize,
       " participants) provides at least ",
       power_level * 100, "%",
-      " power to discern or detect a true average ",
+      " power to discern/detect a true average ",
       string_type_of_test,
       " of at least ",
       round(delta_primary, 2),
       " units or greater, with an outcome SD of ",
       round(sd_primary, 2),
-      # " and an intraclass correlation (ICC) of ", # optional
-      # round(icc, 2), # optional
+      " and an ICC of ", # optional
+      round(icc, 2), # optional
       "."
       # " at least as large as the true hypothesized average difference."
     )
-    
+        
   ) %>%
   dplyr::select(type_of_test, Scenario, Description)
 

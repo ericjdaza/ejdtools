@@ -1,6 +1,6 @@
 ---
 title: "Project: [insert project name or codename]: Power and Sample Size Calculations based on Comparisons"
-author: "[Eric J. Daza, DrPH, MPS](https://www.ericjdaza.com/)"
+author: "[Eric J. Daza, DrPH, MPS | ericjdaza.com](https://www.ericjdaza.com/)"
 date: "`r Sys.Date()`"
 output:
   pdf_document:
@@ -35,14 +35,15 @@ In an exploratory study, we seek to characterize largely unknown relationships b
 
 A power analysis is used to characterize the relationship between these six core interdependent components:
   
-  1. differences in mean outcomes of interest across two or more categorical levels of another variable (e.g., effect sizes, association magnitudes)
+1. differences in mean outcomes of interest across two or more categorical levels of another variable (e.g., effect sizes, association magnitudes)
 1. number of statistical hypothesis tests to be conducted (e.g., research objectives)
 1. outcome standard deviations (SDs)
 1. outcome distributions (e.g., normal, binomial)
 1. statistical properties (i.e., maximum false positive rates (FPRs) or statistical significance levels like $\alpha = 0.05$, statistical power values like $1 - \beta = 0.8$)
 1. sample sizes
 
-A power analysis must characterize the possible scenarios given pre-specified components. The more components are specified, the fewer the scenarios it must characterize. For two-sample tests, note that Cohen’s $d$ for equal group sizes is equal to a difference in mean outcomes (for a given outcome) divided by the outcome SD.
+A power analysis must characterize the possible scenarios given pre-specified components. The more components are specified, the fewer the scenarios it must characterize.
+For two-sample tests, note that Cohen’s $d$ for equal group sizes is equal to a difference in mean outcomes (for a given outcome) divided by the outcome SD.
 
 #### ((Text for Confirmatory Studies))
 
@@ -61,7 +62,7 @@ For hypotheses that are not stated as comparisons to a null, statistical power o
 
 The MOE formula is $MOE = z_{1-\alpha/2} \sigma/\sqrt{n}$, where $z_{1-\alpha/2}$ is the z-score corresponding to confidence level $1 - \alpha/2$ (e.g., 0.975 for a 95% CI),  is the outcome standard deviation (SD), and $n$ is the sample size. Hence, a MOE analysis is used to characterize the relationship between these six core interdependent components:
   
-  1. outcome SD
+1. outcome SD
 1. outcome distribution (e.g., normal, binomial)
 1. statistical properties (i.e., CI or MOE and confidence level)
 1. sample size
@@ -88,13 +89,11 @@ Such results cannot be used to make a solid recommendation to pick from a few de
 
 ### Basic Setup and Parameters
 
-To do so requires a certain sample size $n$, which depends on the following two quantities.
+The sample size required, $n$, depends on the following two quantities.
 
-1. What is the highest chance of accidentally discerning/detecting a false average difference of size $\delta$ or larger, that we will allow or tolerate? This is the maximum false-positive or "Type 1 error" rate we want, formally written as $\alpha$.
-- The false-positive rate (FPR) is defined as the probability of discerning/detecting a false average difference of this size by chance.
+1. What is the highest chance of accidentally discerning/detecting a false average difference of size $\delta$ or larger, that we will allow or tolerate? This is the maximum false positive or "Type 1 error" rate we want, formally written as $\alpha$. The false positive rate (FPR) is defined as the probability of discerning/detecting a false average difference of this size by chance.
 
-1. For a given $\alpha$, what is the lowest chance of discerning/detecting a true average difference of size $\delta$ or larger, that we will allow or tolerate? This is the statistical power we want, formally written as $1 - \beta$.
-- Statistical power is defined as the probability of discerning/detecting a true average difference of this size for a given FPR. Put differently, it is the power to statistically discern/detect a true average difference of this size for a given FPR.
+1. For a given $\alpha$, what is the lowest chance of discerning/detecting a true average difference of size $\delta$ or larger, that we will allow or tolerate? This is the statistical power we want, formally written as $1 - \beta$. Statistical power is defined as the probability of discerning/detecting a true average difference of this size for a given FPR. Put differently, it is the power to statistically discern/detect a true average difference of this size for a given FPR.
 
 Note that $\alpha$ also equals our desired threshold for declaring a test's p-value to be statistically significant. That is, we decide beforehand that if a test's p-value is no larger than $\alpha$, then we can be confident that our sample average difference is an estimate of a true, unknown average difference that is not zero. How confident? $(1 - \alpha) \times 100\%$, which for $\alpha = 0.05$ equals 95%. We can now see how this $\alpha$ exactly corresponds to the degree of confidence expressed in a confidence interval.
 
@@ -112,14 +111,6 @@ There is often more than one pre-planned statistical hypothesis test. The number
 The desired generalizable findings often correspond to a study's main research hypotheses or endpoints. If pre-study (i.e., a priori, ex ante) research interests include a more elaborate linearized model, sometimes researchers want to claim that the estimated coefficients of certain model terms generalize. The number of terms in such models must be included in the total number of tests to run.
 
 For $m$ tests, we must adjust the FPR for each test in a way that preserves the overall or familywise $\alpha$ (as in the "family" of $m$ tests). This is called *multiplicity adjustment*. The easiest such adjustment is a simple *Bonferroni correction*, which equally splits the familywise $\alpha$ in $m$; i.e., each test's FPR is equal to $\alpha / m$.
-
-#### Repeated Measures: Intraclass Correlation
-
-The outcome of interest is a change or difference between pre- and post-treatment raw outcomes, denoted as $Y = Y_{post} - Y_{pre}$. For any participant, each pre-post outcome may be correlated. For example, if a participant's pre-treatment outcome is high, their post-treatment outcome may increase or decrease, but may also be high. This is called the intraclass correlation (ICC), where a "class" (or cluster) in our case is a participant.
-
-We must account for the ICC in our power and sample size (PSS) calculations. The good news is that this actually can reduce the sample size we'll need!
-  
-Let $\sigma^2$ represent the variance of raw outcomes at either pre- or post-treatment. Then the SD of the pre-post difference $Y$ is $\sigma_Y = \sqrt{2 \sigma^2 (1 - ICC)}$ (see **Appendix: Repeated Measures**). From this, we see that the higher the positive ICC, the lower the variance of the pre-post difference. This lowers the sample size we'd need if $ICC > 0.5$. Specifically, if $ICC = 0.5$, then the variance we'd specify in our PSS calculations is simply $\sigma^2$, the variance of outcomes at either pre or post period.
 
 #### Anticipated Attrition
 
@@ -183,6 +174,12 @@ We have:
 ### Intraclass Correlation
 
 The t-statistic variance formula has been straightforward so far. But what is the formula for $Var(Y)$?
+
+The outcome of interest is a change or difference between pre- and post-treatment raw outcomes, denoted as $Y = Y_{post} - Y_{pre}$. For any participant, each pre-post outcome may be correlated. For example, if a participant's pre-treatment outcome is high, their post-treatment outcome may increase or decrease, but may also be high. This is called the intraclass correlation (ICC), where a "class" (or cluster) in our case is a participant.
+
+We must account for the ICC in our power and sample size (PSS) calculations. The good news is that this actually can reduce the sample size we'll need!
+  
+Let $\sigma^2$ represent the variance of raw outcomes at either pre- or post-treatment. Then the SD of the pre-post difference $Y$ is $\sigma_Y = \sqrt{2 \sigma^2 (1 - ICC)}$. From this, we see that the higher the positive ICC, the lower the variance of the pre-post difference. This lowers the sample size we would need if $ICC > 0.5$. Specifically, if $ICC = 0.5$, then the variance we would specify in our PSS calculations is simply $\sigma^2$, the variance of outcomes at either pre or post period.
 
 Let $Y_{x,i,t}$ denote the outcome per participant at either the $t = pre$ or $t = post$ period of observation. Then the per-participant difference is $Y_{x,i} = Y_{x,i,post} - Y_{x,i,pre}$, yielding $Var(Y) = Var \left( Y_{post} - Y_{pre} \right)$. Recall that
 \[
@@ -301,11 +298,11 @@ Put simply, statistical significance has nothing to do with significance. The ph
 
 Some alternatives are to shorten "statistically significant" to simply "statistical"---or better yet, to "discernible", "detectable", "apparent", "evident", or "inferrable". For solutions, please see [twitter.com/ericjdaza/status/1382413617572708356](https://twitter.com/ericjdaza/status/1382413617572708356). I have successfully published a paper within minimal use of the phrase "statistical significance"; see [twitter.com/ericjdaza/status/1372851369317568512](https://twitter.com/ericjdaza/status/1372851369317568512) for how I did it.
 
-In general, I highly recommend citing [McShane et al (2019)](https://amstat.tandfonline.com/doi/full/10.1080/00031305.2018.1527253), [Wasserstein et al (2019)](https://www.tandfonline.com/doi/full/10.1080/00031305.2019.1583913), and [Wasserstein and Lazar (2016)](https://www.tandfonline.com/doi/full/10.1080/00031305.2016.1154108) (see **References**) as the definitive/authoritative leading statistical science references in support of this lexical strategy. They can also be used to carefully but firmly rebuff reviewer suggestions to keep "statistical significance".
+In general, I highly recommend citing [Witmer (2019)](https://www.tandfonline.com/doi/full/10.1080/10691898.2019.1702415), [McShane et al (2019)](https://amstat.tandfonline.com/doi/full/10.1080/00031305.2018.1527253), [Wasserstein et al (2019)](https://www.tandfonline.com/doi/full/10.1080/00031305.2019.1583913), and [Wasserstein and Lazar (2016)](https://www.tandfonline.com/doi/full/10.1080/00031305.2016.1154108) (see **References**) as the definitive/authoritative leading statistical science references in support of this lexical strategy. They can also be used to carefully but firmly rebuff reviewer suggestions to keep "statistical significance".
 
 
 
-## References
+## Appendix References
 
 - Eldridge SM, Ukoumunne OC, Carlin JB. The intra‐cluster correlation coefficient in cluster randomized trials: a review of definitions. International Statistical Review. 2009 Dec;77(3):378-94. [onlinelibrary.wiley.com/doi/abs/10.1111/j.1751-5823.2009.00092.x](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1751-5823.2009.00092.x)
 
@@ -315,15 +312,22 @@ In general, I highly recommend citing [McShane et al (2019)](https://amstat.tand
 
 <!-- - de Vet HC, Mokkink LB, Mosmuller DG, Terwee CB. Spearman–Brown prophecy formula and Cronbach's alpha: different faces of reliability and opportunities for new applications. Journal of Clinical Epidemiology. 2017 May 1;85:45-9. [sciencedirect.com/science/article/abs/pii/S0895435617302494](https://www.sciencedirect.com/science/article/abs/pii/S0895435617302494) -->
   
-  - Wasserstein, Ronald L., Allen L. Schirm, and Nicole A. Lazar. "Moving to a world beyond “p< 0.05”." (2019): 1-19. [tandfonline.com/doi/full/10.1080/00031305.2019.1583913](https://www.tandfonline.com/doi/full/10.1080/00031305.2019.1583913)
+- Wasserstein, Ronald L., Allen L. Schirm, and Nicole A. Lazar. "Moving to a world beyond “p< 0.05”." (2019): 1-19. [tandfonline.com/doi/full/10.1080/00031305.2019.1583913](https://www.tandfonline.com/doi/full/10.1080/00031305.2019.1583913)
 
 - Wasserstein, Ronald L., and Nicole A. Lazar. "The ASA statement on p-values: context, process, and purpose." (2016): 129-133. [tandfonline.com/doi/full/10.1080/00031305.2016.1154108](https://www.tandfonline.com/doi/full/10.1080/00031305.2016.1154108)
+
+- Witmer, J. (2019). Editorial. Journal of Statistics Education, 27(3), 136–137. [doi.org/10.1080/10691898.2019.1702415](https://www.tandfonline.com/doi/full/10.1080/10691898.2019.1702415)
 
 
 
 ## ((INTERNAL USE ONLY)) Learnings: Process Lessons Learned ((optional but recommended))
 
 Add lessons learned here. Examples include things that add time to doing these calculations, like:
-  - parameters (e.g., means, standard deviations) having to be derived from the literature because they aren't reported explicitly, with explanations and justifications for why your derivations are reasonable
+
+- parameters (e.g., means, standard deviations) having to be derived from the literature because they aren't reported explicitly, with explanations and justifications for why your derivations are reasonable
+
 - different pre-post time intervals between what's in the literature and your study design; may require adjustment (e.g., linear extrapolation) if the anticipated effect or association size depends on the time between pre- and post-
-  - more complex designs, like a cluster randomized trial (which necessitates setting an ICC between participants within each cluster)
+
+- more complex designs, like a cluster randomized trial (which necessitates setting an ICC between participants within each cluster)
+
+- having to transform a skewed variable before it can be used for PSS calculations

@@ -1,6 +1,6 @@
 ---
 title: "Project: [insert project name or codename]: Power and Sample Size Calculations for Two Groups"
-author: "[Eric J. Daza, DrPH, MPS](https://www.ericjdaza.com/)"
+author: "[Eric J. Daza, DrPH, MPS | ericjdaza.com](https://www.ericjdaza.com/)"
 date: "`r Sys.Date()`"
 output:
   pdf_document:
@@ -104,7 +104,8 @@ Refer to the study protocol.
 
 # Objective
 
-We want to statistically discern or detect a hypothesized true average difference (i.e., association or effect size) of size $\delta$ or larger in continuous outcomes $Y$ between two treatment groups. We will assume these outcomes vary with the same standard deviation (SD) $\sigma_Y$ at any time point in both groups. These two quantities are often combined as Cohen's $d$, defined as $d = \delta \big/ \sigma_Y$. We will also assume these outcomes are fairly normally distributed, allowing us to rely on Cohen's $d$ and the two-sample t-test in our calculations carried out via the R command `pwr::pwr.t.test()`.
+We want to statistically discern or detect a hypothesized true average pre-post difference (i.e., change over time) of size $\delta$ or larger in continuous outcomes $Y$ between two treatment groups. We will assume these outcomes vary with the same standard deviation (SD) at either time point in both groups. We will also assume these outcomes are fairly normally distributed, allowing us to rely on the two-sample t-test in our calculations carried out via the R command `stats::power.t.test()`.
+These two quantities are often combined as Cohen's $d$, defined as $d = \delta \big/ \sigma_Y$ where $\sigma_Y$ represents the standard deviation of the per-participant pre-post differences.
 
 
 
@@ -116,13 +117,18 @@ We want to statistically discern or detect a hypothesized true average differenc
 
 ## Parameters Chosen
 
-The most conservative sample size will be the largest one we anticipate needing. To calculate this, we need to use the smallest hypothesized true average difference among the `r tbl_pss_parameters$num_of_tests` a priori research hypotheses, along with the outcome with the largest SD. Based on our literature review and scientific judgment, we will assume that the smallest true average difference is `r tbl_pss_parameters$delta_primary` units, and that the largest SD of pre- and post-treament outcomes in both groups is `r tbl_pss_parameters$sd_primary`. The same sample size results will apply if the smallest true average difference is `r tbl_pss_parameters$delta_secondary %>% round(2)` units, and the largest SD of pre- and post-treament outcomes in both groups is `r tbl_pss_parameters$sd_secondary`.
+<!-- The most conservative sample size will be the largest one we anticipate needing. To calculate this, we need to use the smallest hypothesized true average difference for the a priori research hypothesis, along with the largest hypothesized true outcome SD. Based on our literature review, pilot study data, and scientific judgment, we will assume that the smallest true average difference is $\delta =$ `r tbl_pss_parameters$delta_primary` units, and that the largest SD of pre- and post-treatment outcomes is `r tbl_pss_parameters$sd_primary`. (Note that the latter is not the same as the SD of the per-participant pre-post difference in outcomes, $\sigma_Y$. See the **Appendix** for details.) -->
 
-We will conduct `r tbl_pss_parameters$num_of_tests` main statistical hypothesis tests. These correspond to our primary and secondary research hypotheses or endpoints. We will use a Bonferroni correction that equally splits the familywise $\alpha$ among `r tbl_pss_parameters$num_of_tests` tests; i.e., each test's $\alpha$ is equal to $\alpha$/`r tbl_pss_parameters$num_of_tests`.
+The most conservative sample size will be the largest one we anticipate needing. To calculate this, we need to use the smallest hypothesized true average difference among the `r tbl_pss_parameters$num_of_tests` a priori research hypotheses, along with the largest hypothesized true outcome SD. Based on our literature review and scientific judgment, we will assume that the smallest true average difference is $\delta =$ `r tbl_pss_parameters$delta_primary` units, and that the largest SD of pre- and post-treatment outcomes in both groups is `r tbl_pss_parameters$sd_primary`. (Note that the latter is not the same as the SD of the per-participant pre-post difference in outcomes, $\sigma_Y$. See the **Appendix** for details.) The same sample size results will apply if the smallest true average difference is `r tbl_pss_parameters$delta_secondary %>% round(2)` units, and the largest SD of pre- and post-treatment outcomes in both groups is `r tbl_pss_parameters$sd_secondary`.
+
+We will conduct `r tbl_pss_parameters$num_of_tests` main statistical hypothesis tests. These correspond to our primary and secondary research hypotheses or endpoints. We will use a Bonferroni correction that equally splits our chosen maximum familywise false positive rate (FPR) (equivalently, statistical significance level) of $\alpha = $ `r chosen_alpha_familywise` among `r tbl_pss_parameters$num_of_tests` tests; i.e., each test's $\alpha$ is equal to $\alpha$/`r tbl_pss_parameters$num_of_tests`.
+<!-- We will conduct one main statistical hypothesis test. These correspond to our primary and secondary research hypotheses or endpoints. We will use a maximum false positive rate (FPR) (equivalently, statistical significance level) of $\alpha =$ `r chosen_alpha_familywise`. -->
 
 <!-- ((example ICC text 1)) The literature supports a pre-post intraclass correlation (ICC) per participant of `r chosen_icc` for the StudySurvey scale. This is based on using Cronbach's $\alpha$ as a proxy for the ICC ([de Vet et al, 2017](https://www.sciencedirect.com/science/article/abs/pii/S0895435617302494)). The relevant Cronbach's $\alpha$ value is ??? in the ??? row of Table ??? of [study domain reference](link) as a reasonable proxy. -->
 
-((example ICC text 2)) The literature supports a pre-post intraclass correlation (ICC) per participant of `r chosen_icc` for the StudySurvey scale. This is based on using the smallest StudySurvey test-retest ICC of [study domain reference](link). We will assume that at most `r tbl_pss_parameters$p_attrition * 100`% of participants on each arm may drop out before study completion.
+((example ICC text 2)) The literature supports a pre-post intraclass correlation (ICC) per participant of `r chosen_icc` for the StudySurvey scale. This is based on using the smallest StudySurvey test-retest ICC of [study domain reference](link).
+
+We will assume that at most `r tbl_pss_parameters$p_attrition * 100`% of participants may drop out before study completion.
 
 
 
@@ -136,19 +142,28 @@ We will conduct `r tbl_pss_parameters$num_of_tests` main statistical hypothesis 
 
 The naive Cohen's $d$ (i.e., before adjusting for ICC, or equivalently setting the ICC to 0.5) is `r tbl_pss_parameters$cohens_d_initial %>% round(3)`. The Cohen's $d$ we will use accounts for the ICC, and is equal to $d = \delta \big/ \sqrt{2 \sigma^2 (1 - ICC)}$, where $\sigma^2$ represents the variance of raw outcomes in either group at either pre- or post-treatment (see Appendix).
 
-Here is an example of two extremes of required sample sizes for two-sample tests:
+Here are two examples of the minimum and maximum required sample sizes among different scenarios shown in the table below. Each scenario represents different parameter values.
 
 - `r tbl_sims_sentences_ntests$Description[tbl_sims_final_ntests$sampsize == min(tbl_sims_final_ntests$sampsize, na.rm = TRUE)]`
 - `r tbl_sims_sentences_ntests$Description[tbl_sims_final_ntests$sampsize == max(tbl_sims_final_ntests$sampsize, na.rm = TRUE)]`
 
-The trend between these extremes is illustrated below.
+Note that:
 
-- For any particular tolerable overall FPR, the number of participants required in each group increases with higher desired statistical power.
-- For any particular FPR and power, the number of participants decreases with higher ICC.
+- For a given FPR, the required sample size increases with higher required power.
+- For a given FPR and power, the required sample size decreases with higher ICC.
 
 ```{r echo=FALSE, out.width="100%", fig.cap="One Sample: One Statistical Test"}
 tbl_sims_fancy_ntests %>% knitr::kable("simple")
 ```
 
+
+
+
+# References
+
+- Reference1
+
+- Reference2
+s
 ```{r child = 'pss-cb-appendices.Rmd'}
 ```

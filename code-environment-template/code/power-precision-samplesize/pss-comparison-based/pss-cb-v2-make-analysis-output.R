@@ -207,7 +207,7 @@ tbl_sims_fancy <- tbl_sims_final %>%
     `$\\sigma_Y$` = sigmaY,
     # `Cohen's d` = cohens_d,
     `Sample Size n` = sampsize,
-    `Attrition-Adjusted n` = sampsize_attrition
+    `Attrition-Inflated n` = sampsize_attrition
   )
 
 ### Export.
@@ -228,14 +228,14 @@ tbl_sims_sentences <- tbl_sims_final %>%
       
       num_of_tests == 1 ~ paste0(
         (1 - alpha_familywise) * 100,
-        "% confidence (i.e., FPR or statistical significance level of ",
+        "% confidence (i.e., false positive rate or statistical significance level of ",
         alpha_familywise,
         "), enrolling "
       ),
       
       num_of_tests > 1 ~ paste0(
         (1 - alpha_per_test) * 100,
-        "% confidence (i.e., FPR or statistical significance level of ",
+        "% confidence (i.e., false positive rate or statistical significance level of ",
         # alpha_per_test / num_of_tests, # this seems to have been incorrect from 2 Oct 2021
         alpha_per_test,
         " for each of ",
@@ -263,9 +263,9 @@ tbl_sims_sentences <- tbl_sims_final %>%
       string_type_of_test,
       " of at least ",
       round(delta_primary, 2),
-      " units or greater, with an outcome SD of ",
+      " units or greater, with an outcome standard deviation of ",
       round(sd_primary, 2),
-      " and an ICC of ", # optional
+      " and an intraclass correlation of ", # optional
       round(icc, 2), # optional
       "."
       # " at least as large as the true hypothesized average difference."
